@@ -4,7 +4,7 @@ Path = require('path');
 Axios = require('axios');
 doc = new PDFDocument({
     size: 'A4',
-    margin: 5
+    margin: 0
 });
 
 
@@ -31,13 +31,18 @@ async function downloadImage(prmIdCard) {
 //console.log(fs.existsSync('./images/10045474.jpg'));
 
 decklist = require('./deck.json');
-
+const removeFirstZero = e => {
+    if(e.charAt(0) !== "0") {
+        return e;
+    } else {
+        return removeFirstZero(e.slice(1));
+    }
+}
 const downloadImages = async _ => {
 
     for (let i = 0; i < decklist.length; i++) {
-        if(decklist[i].charAt(0) === "0") {
-            decklist[i] = decklist[i].slice(1);
-        }
+        decklist[i] = removeFirstZero(decklist[i]);
+
         const path = './images/' + decklist[i] + '.jpg';
         if(!fs.existsSync(path)) {
             console.log(decklist[i]);
@@ -52,10 +57,11 @@ const makePdfProxies = async _ => {
         //See below for browser usage 
         doc.pipe(fs.createWriteStream('output.pdf'))
 
-        let x = 32;
-        let y = 32;
+        let x = 40;
+        let y = 40;
         let width = 173;
         let height = 252;
+        let margin = 0;
 
         for (let i = 0; i < decklist.length; i++) {
             // console.log("i : " + i);
@@ -67,15 +73,15 @@ const makePdfProxies = async _ => {
             const path = './images/' + decklist[i] + '.jpg';
 
             if (i % 3 !== 0) {
-                x = x + width + 5;
+                x = x + width + margin;
                 //y = y + height;   
             } else if (i !== 0) {
-                x = 32;
-                y = y + height + 5;
+                x = 40;
+                y = y + height + margin;
             }
             if (y + height > 842) {
-                y = 32;
-                x = 32;
+                y = 40;
+                x = 40;
                 doc.addPage().image('./images/' + decklist[i] + '.jpg', x, y, {
                     fit: [width, height],
                     //    align: 'center',
