@@ -1,7 +1,10 @@
 node_modules
 images/*
+!images/.gitkeep
 upload_ydk/*
+!upload_ydk/.gitkeep
 pdf/*
+!pdf/.gitkeep
 deck.json
 form.html
 output.pdf
