@@ -11,6 +11,8 @@ const morgan = require('morgan');
 const _ = require('lodash');
 const pdfFolder = `${__dirname}/pdf`;
 
+const port = 8080;
+
 const makeId = prmLength => {
   let result = '';
   let chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -215,6 +217,6 @@ app.use(function (req, res, next) {
 });
 
 
-app.listen(8080, () => {
-  console.log(`YGOProxy is running, please visite http://localhost.8080 to make your proxies!`)
+app.listen(port, () => {
+  console.log(`YGOProxy is running, please visite http://localhost:${port} to make your proxies!`)
 })
