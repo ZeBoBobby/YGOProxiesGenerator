@@ -64,7 +64,8 @@ app.post('/upload-decklist', async (req, res) => {
           console.log("All done!");
           res.render('pages/success', {
             filename: filename,
-            success: 'success'
+            success: 'success',
+            page: 'upload'
           });
         }).catch(error => {
           console.error(error)
@@ -73,17 +74,6 @@ app.post('/upload-decklist', async (req, res) => {
           });
         });
       })
-
-      //send response
-      // res.send({
-      //     status: true,
-      //     message: 'File is uploaded' + fileLocation,
-      //     data: {
-      //         name: deckfile.name,
-      //         mimetype: deckfile.mimetype,
-      //         size: deckfile.size
-      //     }
-      // });
     }
   } catch (err) {
     res.status(500).send(err);
@@ -208,7 +198,15 @@ const makePdfProxies = async prmFileName => {
 // }).catch(error => console.error(error));
 
 app.get('/', (req, res) => {
-  res.render('pages/index');
+  res.render('pages/index', {
+    page: 'home'
+  });
+})
+
+app.get('/credits', (req, res) => {
+  res.render('pages/credits', {
+    page: 'credits'
+  });
 })
 
 app.use(function (req, res, next) {
