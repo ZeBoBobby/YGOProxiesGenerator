@@ -1,2 +1,10 @@
 node_modules
 images/*
+upload_ydk/*
+pdf/*
+deck.json
+form.html
+output.pdf
+style.css
+success.html
+test8index.js

@@ -9,13 +9,25 @@
     <div class="container mt-5">
         <div class="row">
             <div class="col-md-12">
-                <h1>Well done!</h1>
+                <% if (success) { %>
+                  <h1>Well done!</h1>
+                <% } else { %>
+                  <h1>Something went wrong :/</h1>
+                <% } %> 
             </div>
         </div>
         <div class="row">
             <div class="col-md-12">
-                <p>Everything went well! All you have to do now is download and print your PDF file.</p>
+              <% if (success) { %>
+                <p>Everything went well! All you have to do now is download and print your <a href="<%= filename %>">proxies PDF file.</a></p>
                 <p>Be careful, the link will expire in a few hours and you will have to start the procedure again if you have not saved your file!</p>
+                <p> <a href="<%= filename %>" target="_blank" rel="noopener noreferrer"><%= filename %></a></p>
+                <p class="mt-4">Click on <a href="/">this link</a> to make a new proxies file.</p>
+              <% } else { %>
+                <p>It appears that an error occurred while sending your YDK.  It is possible that your YDK is incorrect or exceeds the maximum size allowed (2MB).</p>
+                <p>Please try again after checking that everything is correct.</p>
+                <%- include('../partials/form') %> 
+              <% } %>
             </div>
         </div>
     </div>
