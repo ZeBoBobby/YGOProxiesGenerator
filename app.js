@@ -1,6 +1,6 @@
 const PDFDocument = require('pdfkit');
-const express = require('express')
-const app = express()
+const express = require('express');
+const app = express();
 const fs = require('fs');
 const Path = require('path');
 const Axios = require('axios');
@@ -8,7 +8,7 @@ const fileUpload = require('express-fileupload');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
-const _ = require('lodash');
+const favicon = require('serve-favicon');
 const pdfFolder = `${__dirname}/pdf`;
 
 const port = 8080;
@@ -33,6 +33,10 @@ app.use(fileUpload({
   }
 }));
 
+app.use(favicon(Path.join(__dirname, '.', 'favicon.ico')))
+
+app.disable('etag');
+
 app.use(express.static('pdf'));
 
 app.set('view engine', 'ejs');
@@ -45,11 +49,12 @@ app.use(bodyParser.urlencoded({
 app.use(morgan('dev'));
 
 app.post('/upload-decklist', async (req, res) => {
-  console.log(req.files.deckfile);
   try {
     if (!req.files) {
       res.render('pages/success', {
-        success: ''
+        success: '',
+        page: '',
+        error: 'Uploaded file is empty or corrupted'
       });
     } else {
       //Use the name of the input field (i.e. "deckfile") to retrieve the uploaded file
@@ -65,18 +70,25 @@ app.post('/upload-decklist', async (req, res) => {
           res.render('pages/success', {
             filename: filename,
             success: 'success',
-            page: 'upload'
+            page: 'upload',
+            error: ''
           });
         }).catch(error => {
           console.error(error)
           res.render('pages/success', {
-            success: ''
+            success: '',
+            page: '',
+            error: error
           });
         });
       })
     }
   } catch (err) {
-    res.status(500).send(err);
+    res.status(500).render('pages/success', {
+      success: '',
+      page: '',
+      error: err
+    });
   }
 });
 
@@ -101,7 +113,7 @@ const downloadImage = async prmIdCard => {
 }
 
 const onlyCardsId = prmString => {
-  if ((prmString.includes('#') || prmString.includes('!')) || prmString.length < 4) {
+  if ((prmString.includes('#') || prmString.includes('!')) || prmString.length < 4 ) {
     return false;
   }
   return true;
@@ -116,22 +128,18 @@ const removeFirstZero = e => {
     return removeFirstZero(e.slice(1));
   }
 }
+
 const downloadImages = async (prmDeckfile) => {
   console.log("New images downloading...");
   console.log('from : ', prmDeckfile); // var decklist;
-  // await fs.readFile('./decklist.ydk', function(err, data) {
-  //     if(err) throw err;
-  //     decklist = data.toString().split("\n").filter(elm => onlyCardsId(elm));
-  // });
+
   decklist = fs.readFileSync(prmDeckfile).toString().split("\n").filter(elm => onlyCardsId(elm)).map(elm => elm.trim());
-  console.log(decklist);
 
   for (let i = 0; i < decklist.length; i++) {
     decklist[i] = removeFirstZero(decklist[i]);
 
     const path = './images/' + decklist[i] + '.jpg';
     if (!fs.existsSync(path)) {
-      console.log(decklist[i]);
       await downloadImage(decklist[i]);
     }
   }
@@ -156,11 +164,6 @@ const makePdfProxies = async prmFileName => {
 
   console.log("PDF file creation...");
   for (let i = 0; i < decklist.length; i++) {
-    // console.log("i : " + i);
-    // console.log("x : " + x);
-    // console.log("y : " + y);
-    // console.log("mod : " + i % 3);
-    console.log(decklist[i]);
 
     const path = './images/' + decklist[i] + '.jpg';
 
@@ -174,13 +177,13 @@ const makePdfProxies = async prmFileName => {
     if (y + height > 842) {
       y = 40;
       x = 40;
-      doc.addPage().image('./images/' + decklist[i] + '.jpg', x, y, {
+      doc.addPage().image(path, x, y, {
         fit: [width, height],
         //    align: 'center',
         //    valign: 'center'
       });
     } else {
-      doc.image('./images/' + decklist[i] + '.jpg', x, y, {
+      doc.image(path, x, y, {
         fit: [width, height],
         //    align: 'center',
         //    valign: 'center'
@@ -190,12 +193,6 @@ const makePdfProxies = async prmFileName => {
   //Add an image, constrain it to a given size, and center it vertically and horizontally 
   doc.end();
 }
-
-
-// downloadImages().then(e => {
-//     makePdfProxies();
-//     console.log("All done!");
-// }).catch(error => console.error(error));
 
 app.get('/', (req, res) => {
   res.render('pages/index', {
@@ -211,7 +208,9 @@ app.get('/credits', (req, res) => {
 
 app.use(function (req, res, next) {
   res.status(404);
-  res.render('pages/404');
+  res.render('pages/404', {
+    page: ''
+  });
 });
 
 

@@ -26,7 +26,10 @@
               <% } else { %>
                 <p>It appears that an error occurred while sending your YDK.  It is possible that your YDK is incorrect or exceeds the maximum size allowed (2MB).</p>
                 <p>Please try again after checking that everything is correct.</p>
-                <%- include('../partials/form') %> 
+                <%- include('../partials/form') %>
+                <% if (error.length > 0) { %>
+                  <%= error %> 
+                <% } %>
               <% } %>
             </div>
         </div>
