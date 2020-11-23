@@ -9,13 +9,13 @@
     <div class="container mt-5">
         <div class="row">
             <div class="col-md-12">
-                <h1><%= lang == 'fr' ? 'Crédits' : 'Credits' %></h1>
+                <h1><%= lang.includes('fr') ? 'Crédits' : 'Credits' %></h1>
             </div>
         </div>
         <div class="row">
             <div class="col-md-12">
-                <p><%= lang == 'fr' ? 'Cet outil utilise la superbe' : 'This tool use the amazing' %> <a href="https://db.ygoprodeck.com/api-guide/"><%= lang == 'fr' ? 'API ygoprodeck.com' : 'ygoprodeck.com API' %></a> <%= lang == 'fr' ? 'pour récupérer les images des cartes' : 'to get all required images.' %></p>
-                <p><%= lang == 'fr' ? 'Cet outil est totalement gratuit, mais s\'il t\'a aidé à devenir le maître du jeu, n\'hésites pas à m\'offrir un chocolat chaud !' : 'This tool is totaly free but if it helped you to become the master of the game and, feel free to buy me a coffe or chocolate !' %></p>
+                <p><%= lang.includes('fr') ? 'Cet outil utilise la superbe' : 'This tool use the amazing' %> <a href="https://db.ygoprodeck.com/api-guide/"><%= lang.includes('fr') ? 'API ygoprodeck.com' : 'ygoprodeck.com API' %></a> <%= lang.includes('fr') ? 'pour récupérer les images des cartes' : 'to get all required images.' %></p>
+                <p><%= lang.includes('fr') ? 'Cet outil est totalement gratuit, mais s\'il t\'a aidé à devenir le maître du jeu, n\'hésites pas à m\'offrir un chocolat chaud !' : 'This tool is totaly free but if it helped you to become the master of the game and, feel free to buy me a coffe or chocolate !' %></p>
                 <a href="https://www.buymeacoffee.com/BoBobby"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=BoBobby&button_colour=FFDD00&font_colour=000000&font_family=Poppins&outline_colour=000000&coffee_colour=ffffff"></a>
             </div>
         </div>

@@ -9,17 +9,17 @@
     <div class="container mt-5">
         <div class="row">
             <div class="col-md-12">
-                <h1><%= lang == 'fr' ? 'Bienvenue sur YGOProxy !' : 'Welcome to YGOProxy!'%></h1>
+                <h1><%= lang.includes('fr') ? 'Bienvenue sur YGOProxy !' : 'Welcome to YGOProxy!'%></h1>
             </div>
         </div>
         <div class="row">
             <div class="col-md-12">
-                <p><%= lang == 'fr' ? 'Cet outil très simple va vous permettre de générer automatiquement et très facilement un fichier PDF de proxies prêt à imprimer, à partir d\'un simple fichier YDK.' : 'This simple tool will allow you to convert automaticaly and very easily an YDK decklist into a ready to print proxy PDF file.'%></p>
-                <p><%= lang == 'fr' ? 'Trois simples étapes :' : 'Three simple steps:' %></p>
+                <p><%= lang.includes('fr') ? 'Cet outil très simple va vous permettre de générer automatiquement et très facilement un fichier PDF de proxies prêt à imprimer, à partir d\'un simple fichier YDK.' : 'This simple tool will allow you to convert automaticaly and very easily an YDK decklist into a ready to print proxy PDF file.'%></p>
+                <p><%= lang.includes('fr') ? 'Trois simples étapes :' : 'Three simple steps:' %></p>
                 <ul>
-                    <li><%= lang == 'fr' ? 'Recherchez votre fichier YDK à l\'aide du formulaire' : 'Upload your YDK file deck' %></li>
-                    <li><%= lang == 'fr' ? 'Cliquez sur le bouton "Proxyfier !"' : 'Click on "Proxify!" button' %></li>
-                    <li><%= lang == 'fr' ? 'Téléchargez et imprimez votre fichier PDF disponible sur le lien fourni' : 'Download and print your proxies set!' %></li>
+                    <li><%= lang.includes('fr') ? 'Recherchez votre fichier YDK à l\'aide du formulaire' : 'Upload your YDK file deck' %></li>
+                    <li><%= lang.includes('fr') ? 'Cliquez sur le bouton "Proxyfier !"' : 'Click on "Proxify!" button' %></li>
+                    <li><%= lang.includes('fr') ? 'Téléchargez et imprimez votre fichier PDF disponible sur le lien fourni' : 'Download and print your proxies set!' %></li>
                 </ul>
             </div>
         </div>
