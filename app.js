@@ -66,7 +66,7 @@ app.post('/upload-decklist', async (req, res) => {
       deckfile.mv(fileLocation).then(a => {
         downloadImages(fileLocation).then(e => {
           const filename = deckfile.name.replace(/\.[^/.]+$/, "").substring(0.12).replace(/\s+/g, '').replace(/[^\w\s]/gi, '') + makeId(12) + '.pdf';
-          makePdfProxies(filename);
+          makePdfProxies(filename, fileLocation);
           console.log("All done!");
           res.render('pages/success', {
             filename: filename,
@@ -77,6 +77,7 @@ app.post('/upload-decklist', async (req, res) => {
           });
         }).catch(error => {
           console.error(error)
+          fs.unlinkSync(fileLocation);
           res.render('pages/success', {
             success: '',
             page: '',
@@ -87,6 +88,7 @@ app.post('/upload-decklist', async (req, res) => {
       })
     }
   } catch (err) {
+    fs.unlinkSync(fileLocation);
     res.status(500).render('pages/success', {
       success: '',
       page: '',
@@ -148,7 +150,7 @@ const downloadImages = async (prmDeckfile) => {
 
 }
 
-const makePdfProxies = async prmFileName => {
+const makePdfProxies = async (prmFileName, prmYDKFileToDelete) => {
 
   const doc = new PDFDocument({
     size: 'A4',
@@ -203,6 +205,7 @@ const makePdfProxies = async prmFileName => {
   }
   //Add an image, constrain it to a given size, and center it vertically and horizontally 
   doc.end();
+  fs.unlinkSync(prmYDKFileToDelete);
 }
 
 app.get('/', (req, res) => {
@@ -229,5 +232,5 @@ app.use(function (req, res, next) {
 
 
 app.listen(port, () => {
-  console.log(`YGOProxy is running, please visite http://localhost:${port} to make your proxies!`)
+  console.log(`YGOProxy is running, please visit http://localhost:${port} to make your proxies!`)
 })
