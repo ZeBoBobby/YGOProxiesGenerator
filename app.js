@@ -54,7 +54,8 @@ app.post('/upload-decklist', async (req, res) => {
       res.render('pages/success', {
         success: '',
         page: '',
-        error: 'Uploaded file is empty or corrupted'
+        error: 'Uploaded file is empty or corrupted',
+        lang: req.acceptsLanguages()[0]
       });
     } else {
       //Use the name of the input field (i.e. "deckfile") to retrieve the uploaded file
@@ -71,14 +72,16 @@ app.post('/upload-decklist', async (req, res) => {
             filename: filename,
             success: 'success',
             page: 'upload',
-            error: ''
+            error: '',
+            lang: req.acceptsLanguages()[0]
           });
         }).catch(error => {
           console.error(error)
           res.render('pages/success', {
             success: '',
             page: '',
-            error: error
+            error: error,
+            lang: req.acceptsLanguages()[0]
           });
         });
       })
@@ -87,7 +90,8 @@ app.post('/upload-decklist', async (req, res) => {
     res.status(500).render('pages/success', {
       success: '',
       page: '',
-      error: err
+      error: err,
+      lang: req.acceptsLanguages()[0]
     });
   }
 });
@@ -119,8 +123,6 @@ const onlyCardsId = prmString => {
   return true;
 }
 
-// var decklist = require('./deck.json');
-
 const removeFirstZero = e => {
   if (e.charAt(0) !== "0") {
     return e;
@@ -150,7 +152,14 @@ const makePdfProxies = async prmFileName => {
 
   const doc = new PDFDocument({
     size: 'A4',
-    margin: 0
+    margin: 0,
+    permissions: {
+      printing: 'highResolution'
+    },
+    info: {
+      Title: 'Proxy file',
+      Author: 'YGOProxy.com'
+    }
   });
   //Pipe its output somewhere, like to a file or HTTP response 
   //See below for browser usage 
@@ -158,8 +167,10 @@ const makePdfProxies = async prmFileName => {
 
   let x = 40;
   let y = 40;
-  let width = 173;
-  let height = 252;
+  let width = 167;
+  let height = 244;
+  // let width = 173;
+  // let height = 252;
   let margin = 0;
 
   console.log("PDF file creation...");
@@ -196,20 +207,23 @@ const makePdfProxies = async prmFileName => {
 
 app.get('/', (req, res) => {
   res.render('pages/index', {
-    page: 'home'
+    page: 'home',
+    lang: req.acceptsLanguages()[0]
   });
 })
 
 app.get('/credits', (req, res) => {
   res.render('pages/credits', {
-    page: 'credits'
+    page: 'credits',
+    lang: req.acceptsLanguages()[0]
   });
 })
 
 app.use(function (req, res, next) {
   res.status(404);
   res.render('pages/404', {
-    page: ''
+    page: '',
+    lang: req.acceptsLanguages()[0]
   });
 });
 

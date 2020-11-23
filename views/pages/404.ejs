@@ -9,8 +9,8 @@
     <div class="h-100 container mt-5">
         <div class="h-100 row align-items-center">
             <div class="col-md-12">
-                <h1 class="text-center m-5">404 error - The requested page does not exist!</h1>
-                <p class="text-center mt-5">Keep safe and <a href="/">go back to home</a> <i class="fas fa-home"></i>!</p>
+                <h1 class="text-center m-5"><%= lang == 'fr' ? 'Erreur 404 - La page demandée n\'existe pas !' : '404 error - The requested page does not exist!' %></h1>
+                <p class="text-center mt-5"><%= lang == 'fr' ? 'Prenez soin de vous et ' : 'Keep safe and ' %><a href="/"><%= lang == 'fr' ? 'retournez à la maison' : 'go back to home' %></a> <i class="fas fa-home"></i>!</p>
             </div>
         </div>
     </div>

@@ -5,9 +5,9 @@
             <div class="form-group">
                 <label for="deckfile">YDK deckfile</label>
                 <input type="file" required class="form-control-file" name="deckfile" id="deckfile" placeholder="" aria-describedby="fileHelpId">
-                <small id="fileHelpId" class="form-text text-muted">Browse any YDK deckfile to make a proxy PDF file.</small>
+                <small id="fileHelpId" class="form-text text-muted"><%= lang == 'fr' ? 'Upload n\'importe quel decklist au format YDK.' : 'Browse any YDK decklist file.' %></small>
                 <div class="text-center">
-                    <button type="submit" class="btn btn-primary mt-4">Proxify!</button>
+                    <button type="submit" class="btn btn-primary mt-4"><%= lang == 'fr' ? 'Proxyfier !' : 'Proxify!' %></button>
                 </div>
             </div>
         </form>
