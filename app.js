@@ -100,7 +100,7 @@ app.post('/upload-decklist', async (req, res) => {
 
 //Permet de récupérer des images de cartes
 const downloadImage = async prmIdCard => {
-  const url = 'https://storage.googleapis.com/ygoprodeck.com/pics/' + prmIdCard + '.jpg';
+  const url = 'https://images.ygoprodeck.com/images/cards/' + prmIdCard + '.jpg';
   const path = Path.resolve(__dirname, 'images', prmIdCard + '.jpg');
   const writer = fs.createWriteStream(path);
 
