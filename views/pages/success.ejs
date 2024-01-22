@@ -12,7 +12,7 @@
                 <% if (success) { %>
                   <h1><%= lang.includes('fr') ? 'Bien joué !' : 'Well done!' %></h1>
                 <% } else { %>
-                  <h1><%= lang.includes('fr') ? 'Il semble que tu n\'aie pas cru en l\'âme des cartes :/' : 'Something went wrong :/' %></h1>
+                  <h1><%= lang.includes('fr') ? 'Il semble que tu n\'aies pas cru en l\'âme des cartes :/' : 'It seems like you didn\'t believe in the heart of the cards :/' %></h1>
                 <% } %> 
             </div>
         </div>
@@ -24,8 +24,7 @@
                 <p> <a href="<%= filename %>" target="_blank" rel="noopener noreferrer"><%= filename %></a></p>
                 <p class="mt-4"><%= lang.includes('fr') ? 'Clique sur' : 'Click on' %> <a href="/"><%= lang.includes('fr') ? 'ce lien' : 'this link' %></a> <%= lang.includes('fr') ? 'pour créer d\'autres proxies' : 'to make new proxies.' %></p>
               <% } else { %>
-                <p><%= lang.includes('fr') ? 'Il semble qu\'une erreur ait eu lieu lors de l\'envoi de ton fichier. Assure-toi que ton fichier YDK est bien valide et qu\'il ne dépasse pas la taille maximum autorisée (2MB).' : 'It appears that an error occurred while sending your YDK.  It is possible that your YDK is incorrect or exceeds the maximum size allowed (2MB).' %></p>
-                <p><%= lang.includes('fr') ? 'Essaie à nouveau après avoir vérifié que tout était correct.' : 'Please try again after checking that everything is correct.' %></p>
+                <p><%= lang.includes('fr') ? 'Il semble qu\'il y ait un souci avec ton fichier YDK ou ton lien YDKE. Vérifie tout ça avant d\'essayer à nouveau !' : 'It seems there is an issue with your YDK file or YDKE link. Double-check everything before trying again!' %></p>
                 <%- include('../partials/form') %>
                 <% if (error.length > 0) { %>
                   <%= error %> 

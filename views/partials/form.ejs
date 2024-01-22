@@ -1,16 +1,61 @@
+<!-- form.ejs -->
+
 <div class="container">
     <div class="row justify-content-md-center">
         <div class="col-md-6 bg-light">
-        <form action="upload-decklist" enctype="multipart/form-data" method="post">
-            <div class="form-group">
-                <label for="deckfile">YDK deckfile</label>
-                <input type="file" required class="form-control-file" name="deckfile" id="deckfile" placeholder="" aria-describedby="fileHelpId">
-                <small id="fileHelpId" class="form-text text-muted"><%= lang.includes('fr') ? 'Uploade n\'importe quel decklist au format YDK.' : 'Browse any YDK decklist file.' %></small>
-                <div class="text-center">
-                    <button type="submit" class="btn btn-primary mt-4"><%= lang.includes('fr') ? 'Proxyfier !' : 'Proxify!' %></button>
+            <form action="/upload-decklist" method="post" enctype="multipart/form-data" id="proxyForm">
+                <div class="form-group">
+                    <label for="deckfile"><%= lang.includes('fr') ? 'Fichier YDK :' : 'YDK File:' %></label>
+                    <input type="file" class="form-control-file" name="deckfile" id="deckfile" accept=".ydk">
+                    <small class="form-text text-muted"><%= lang.includes('fr') ? 'Uploade n\'importe quelle decklist au format YDK.' : 'Browse any YDK decklist file.' %></small>
                 </div>
-            </div>
-        </form>
+                <div class="text-center">
+                    <p class="or-divider">- <%= lang.includes('fr') ? 'OU' : 'OR' %> -</p>
+                </div>
+                <div class="form-group">
+                    <label for="ydkeCode"><%= lang.includes('fr') ? 'Code YDKE :' : 'YDKE Code:' %></label>
+                    <textarea class="form-control" id="ydkeCode" name="ydkeCode" rows="4"></textarea>
+                    <small class="form-text text-muted"><%= lang.includes('fr') ? 'Entre le code YDKE commençant par "ydke://".' : 'Enter the YDKE code starting with "ydke://".' %></small>
+                </div>
+                <div class="text-center">
+                    <div class="error-message" style="color: red;"></div>
+                    <button type="submit" class="btn btn-primary mt-4" id="proxyButton" disabled><%= lang.includes('fr') ? 'Proxyfier !' : 'Proxify!' %></button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script>
+  $(document).ready(function() {
+    const $deckfileInput = $('#deckfile');
+    const $deckCodeInput = $('#ydkeCode');
+    const $proxyButton = $('#proxyButton');
+    const $errorDiv = $('.error-message');
+
+    $deckfileInput.change(function() {
+      updateProxyButtonState();
+    });
+
+    $deckCodeInput.on('input', function() {
+      updateProxyButtonState();
+    });
+
+    function updateProxyButtonState() {
+      const deckfileValue = $deckfileInput.val();
+      const deckCodeValue = $deckCodeInput.val();
+
+      if ((deckfileValue && deckCodeValue) || (!deckfileValue && !deckCodeValue)) {
+        $proxyButton.prop('disabled', true);
+        $errorDiv.text('<%= lang.includes('fr') ? 'Veuillez fournir uniquement un fichier YDK ou un code YDKE.' : 'Please provide either a YDK file or a YDKE code, not both.' %>');
+      } else if (deckfileValue || deckCodeValue) {
+        $proxyButton.prop('disabled', false);
+        $errorDiv.text('');
+      } else {
+        $proxyButton.prop('disabled', true);
+        $errorDiv.text('<%= lang.includes('fr') ? 'Veuillez fournir un fichier YDK ou un code YDKE.' : 'Please provide a YDK file or a YDKE code.' %>');
+      }
+    }
+  });
+</script>
