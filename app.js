@@ -226,6 +226,13 @@ app.get('/', (req, res) => {
   });
 })
 
+app.get('/calculator', (req, res) => {
+  res.render('pages/calculator', {
+    page: 'calculator',
+    lang: req.acceptsLanguages()[0]
+  });
+})
+
 app.get('/credits', (req, res) => {
   res.render('pages/credits', {
     page: 'credits',
