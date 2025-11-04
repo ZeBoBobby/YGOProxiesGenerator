@@ -27,9 +27,8 @@ L'application télécharge automatiquement les images des cartes depuis l'API YG
 
 - Node.js (version 14 ou supérieure)
 - npm (Node Package Manager)
-- Docker et Docker Compose (pour la version conteneurisée)
 
-### Installation locale
+### Installation
 
 1. Clonez le repository et basculez sur la branche `webapp` :
 ```bash
@@ -53,53 +52,9 @@ npm start
 http://localhost:8080
 ```
 
-### Installation avec Docker
+### Déploiement
 
-1. Clonez le repository :
-```bash
-git clone git@github.com:ZeBoBobby/YGOProxiesGenerator.git
-cd YGOProxiesGenerator
-git checkout webapp
-```
-
-2. Dans le répertoire parent, créez un fichier `docker-compose.yml` :
-```yaml
-version: "2"
-
-services:
-  node:
-    image: node:latest
-    restart: always
-    user: node
-    working_dir: /home/node/app
-    environment:
-      - NODE_ENV=production
-    volumes:
-      - ./ygoproxy:/home/node/app
-      - /etc/localtime:/etc/localtime:ro
-    command: "node app.js"
-    networks:
-      - proxy
-    ports:
-      - "8081:8080"
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.node.entrypoints=http"
-      - "traefik.http.routers.node.rule=Host(`ygoproxy.com`)"
-      - "traefik.http.routers.node-secure.entrypoints=https"
-      - "traefik.http.routers.node-secure.rule=Host(`ygoproxy.com`)"
-      - "traefik.http.routers.node-secure.tls=true"
-      - "traefik.http.services.node.loadbalancer.server.port=8080"
-
-networks:
-  proxy:
-    external: true
-```
-
-3. Lancez le conteneur :
-```bash
-docker-compose up -d
-```
+L'application peut être déployée sur n'importe quel hébergeur Node.js ou conteneurisé avec Docker. Configurez votre environnement selon vos besoins (reverse proxy, SSL, etc.).
 
 ## 📖 Utilisation
 
