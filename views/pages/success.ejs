@@ -23,6 +23,14 @@
                 <p><%= lang.includes('fr') ? 'Attention, ce lien expirera au bout de quelques heures, aussi pense à l\'enregistrer !' : 'Be careful, the link will expire in a few hours and you will have to start the procedure again if you have not saved your file!' %></p>
                 <p> <a href="<%= filename %>" target="_blank" rel="noopener noreferrer"><%= filename %></a></p>
                 <p class="mt-4"><%= lang.includes('fr') ? 'Clique sur' : 'Click on' %> <a href="/"><%= lang.includes('fr') ? 'ce lien' : 'this link' %></a> <%= lang.includes('fr') ? 'pour créer d\'autres proxies' : 'to make new proxies.' %></p>
+                <div class="mt-4 mb-4 text-center">
+                    <div class="bg-light p-3 rounded d-inline-block">
+                        <p class="mb-2"><%= lang.includes('fr') ? 'Tu viens de créer un super PDF de proxies, n\'hésites pas à me payer un petit kawa ou à m\'aider à commander des staple sur Cardmarket ! ☕' : 'You just created an awesome proxy PDF, feel free to buy me a coffee or help me order some staples on Cardmarket! ☕' %></p>
+                        <a href="https://www.buymeacoffee.com/BoBobby" target="_blank" rel="noopener noreferrer">
+                            <img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=BoBobby&button_colour=FFDD00&font_colour=000000&font_family=Poppins&outline_colour=000000&coffee_colour=ffffff" alt="Buy me a coffee">
+                        </a>
+                    </div>
+                </div>
               <% } else { %>
                 <p><%= lang.includes('fr') ? 'Il semble qu\'il y ait un souci avec ton fichier YDK ou ton lien YDKE. Vérifie tout ça avant d\'essayer à nouveau !' : 'It seems there is an issue with your YDK file or YDKE link. Double-check everything before trying again!' %></p>
                 <%- include('../partials/form') %>
