@@ -1,27 +1,40 @@
 <!doctype html>
-<html lang="en">
+<html lang="<%= lang.includes('fr') ? 'fr' : 'en' %>">
   <head>
-    <%- include('../partials/head'); %> 
+    <% 
+      const pageTitle = lang.includes('fr') ? '404 - Page non trouvée - YGOProxy.com' : '404 - Page not found - YGOProxy.com';
+      const pageDescription = lang.includes('fr') ? 'Page non trouvée' : 'Page not found';
+    %>
+    <%- include('../partials/head', { title: pageTitle, description: pageDescription, canonical: 'https://ygoproxy.com' }); %>
+    <meta name="robots" content="noindex, follow"> 
+    <style>
+      .error-404 {
+        text-align: center;
+        min-height: 50vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .error-404-icon {
+        font-size: 6rem;
+        margin-bottom: 1rem;
+      }
+    </style>
   </head>
   <body>
     <%- include('../partials/header'); %> 
 
-    <div class="h-100 container mt-5">
-        <div class="h-100 row align-items-center">
-            <div class="col-md-12">
-                <h1 class="text-center m-5"><%= lang.includes('fr') ? 'Erreur 404 - La page demandée n\'existe pas !' : '404 error - The requested page does not exist!' %></h1>
-                <p class="text-center mt-5"><%= lang.includes('fr') ? 'Prends soin de toi et ' : 'Keep safe and ' %><a href="/"><%= lang.includes('fr') ? 'retourne à la maison' : 'go back to home' %></a> <i class="fas fa-home"></i>!</p>
-            </div>
-        </div>
+    <div class="wrapper">
+      <div class="content-box error-404">
+        <div class="error-404-icon">🔍</div>
+        <h1><%= lang.includes('fr') ? 'Erreur 404 - La page demandée n\'existe pas !' : '404 error - The requested page does not exist!' %></h1>
+        <p style="color: var(--text-secondary);"><%= lang.includes('fr') ? 'Prends soin de toi et ' : 'Keep safe and ' %><a href="/"><%= lang.includes('fr') ? 'retourne à la maison' : 'go back to home' %></a> 🏠</p>
+      </div>
     </div>
 
-    
     <%- include('../partials/footer'); %> 
-    <!-- Optional JavaScript -->
-    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-    <script src='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/js/all.min.js'></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
   </body>
 </html>
+

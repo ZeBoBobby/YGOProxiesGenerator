@@ -1,52 +1,89 @@
 <!doctype html>
-<html lang="en">
+<html lang="<%= lang.includes('fr') ? 'fr' : 'en' %>">
   <head>
-    <%- include('../partials/head');  %> 
+    <% 
+      const pageTitle = success ? (lang.includes('fr') ? 'PDF généré avec succès - YGOProxy.com' : 'PDF generated successfully - YGOProxy.com') : (lang.includes('fr') ? 'Erreur - YGOProxy.com' : 'Error - YGOProxy.com');
+      const pageDescription = lang.includes('fr') ? 'Téléchargez votre PDF de proxies Yu-Gi-Oh! généré' : 'Download your generated Yu-Gi-Oh! proxy PDF';
+    %>
+    <%- include('../partials/head', { title: pageTitle, description: pageDescription, canonical: 'https://ygoproxy.com' }); %> 
+    <style>
+      .success-icon {
+        font-size: 4rem;
+        text-align: center;
+        margin-bottom: 1rem;
+      }
+
+      .error-icon {
+        font-size: 4rem;
+        text-align: center;
+        margin-bottom: 1rem;
+      }
+
+      .pdf-link {
+        display: inline-block;
+        padding: 0.75rem 1.5rem;
+        background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+        color: white;
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: 600;
+        margin: 1rem 0;
+        transition: transform 0.2s ease;
+      }
+
+      .pdf-link:hover {
+        transform: translateY(-2px);
+        color: white;
+        text-decoration: none;
+      }
+
+      .donation-box {
+        text-align: center;
+        margin-top: 2rem;
+      }
+
+      .donation-text {
+        color: var(--text-secondary);
+        margin-bottom: 1rem;
+      }
+    </style>
   </head>
   <body>
-    <%- include('../partials/header');  %> 
+    <%- include('../partials/header'); %> 
 
-    <div class="container mt-5">
-        <div class="row">
-            <div class="col-md-12">
-                <% if (success) { %>
-                  <h1><%= lang.includes('fr') ? 'Bien joué !' : 'Well done!' %></h1>
-                <% } else { %>
-                  <h1><%= lang.includes('fr') ? 'Il semble que tu n\'aies pas cru en l\'âme des cartes :/' : 'It seems like you didn\'t believe in the heart of the cards :/' %></h1>
-                <% } %> 
+    <div class="wrapper">
+      <div class="content-box" style="text-align: center;">
+        <% if (success) { %>
+          <div class="success-icon">✅</div>
+          <h1><%= lang.includes('fr') ? 'Bien joué !' : 'Well done!' %></h1>
+          <p><%= lang.includes('fr') ? 'Tout semble avoir fonctionné ! Il ne te reste plus qu\'à télécharger et imprimer ton' : 'Everything went well! All you have to do now is download and print your' %> <a href="<%= filename %>"><%= lang.includes('fr') ? 'PDF de proxies.' : 'proxies PDF file.' %></a></p>
+          <p style="color: var(--text-secondary); font-size: 0.9rem;"><%= lang.includes('fr') ? 'Attention, ce lien expirera au bout de quelques heures, aussi pense à l\'enregistrer !' : 'Be careful, the link will expire in a few hours and you will have to start the procedure again if you have not saved your file!' %></p>
+          <div style="margin: 1.5rem 0;">
+            <a href="<%= filename %>" target="_blank" rel="noopener noreferrer" class="pdf-link"><%= filename %></a>
+          </div>
+          <p style="margin-top: 2rem;"><%= lang.includes('fr') ? 'Clique sur' : 'Click on' %> <a href="/"><%= lang.includes('fr') ? 'ce lien' : 'this link' %></a> <%= lang.includes('fr') ? 'pour créer d\'autres proxies' : 'to make new proxies.' %></p>
+          
+          <div class="donation-box">
+            <p class="donation-text"><%= lang.includes('fr') ? 'Tu viens de créer un super PDF de proxies, n\'hésites pas à me payer un petit kawa ou à m\'aider à commander des staple sur Cardmarket ! ☕' : 'You just created an awesome proxy PDF, feel free to buy me a coffee or help me order some staples on Cardmarket! ☕' %></p>
+            <a href="https://www.buymeacoffee.com/BoBobby" target="_blank" rel="noopener noreferrer">
+              <img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=BoBobby&button_colour=FFDD00&font_colour=000000&font_family=Poppins&outline_colour=000000&coffee_colour=ffffff" alt="Buy me a coffee">
+            </a>
+          </div>
+        <% } else { %>
+          <div class="error-icon">❌</div>
+          <h1><%= lang.includes('fr') ? 'Il semble que tu n\'aies pas cru en l\'âme des cartes :/' : 'It seems like you didn\'t believe in the heart of the cards :/' %></h1>
+          <p><%= lang.includes('fr') ? 'Il semble qu\'il y ait un souci avec ton fichier YDK ou ton lien YDKE. Vérifie tout ça avant d\'essayer à nouveau !' : 'It seems there is an issue with your YDK file or YDKE link. Double-check everything before trying again!' %></p>
+          <% if (error && error.length > 0) { %>
+            <div style="margin-top: 1rem; padding: 1rem; background: rgba(255, 107, 107, 0.1); border: 1px solid #ff6b6b; border-radius: 8px; color: #ff6b6b;">
+              <%= error %>
             </div>
-        </div>
-        <div class="row">
-            <div class="col-md-12">
-              <% if (success) { %>
-                <p><%= lang.includes('fr') ? 'Tout semble avoir fonctionné ! Il ne te reste plus qu\'à télécharger et imprimer ton' : 'Everything went well! All you have to do now is download and print your' %> <a href="<%= filename %>"><%= lang.includes('fr') ? 'PDF de proxies.' : 'proxies PDF file.' %></a></p>
-                <p><%= lang.includes('fr') ? 'Attention, ce lien expirera au bout de quelques heures, aussi pense à l\'enregistrer !' : 'Be careful, the link will expire in a few hours and you will have to start the procedure again if you have not saved your file!' %></p>
-                <p> <a href="<%= filename %>" target="_blank" rel="noopener noreferrer"><%= filename %></a></p>
-                <p class="mt-4"><%= lang.includes('fr') ? 'Clique sur' : 'Click on' %> <a href="/"><%= lang.includes('fr') ? 'ce lien' : 'this link' %></a> <%= lang.includes('fr') ? 'pour créer d\'autres proxies' : 'to make new proxies.' %></p>
-                <div class="mt-4 mb-4 text-center">
-                    <div class="bg-light p-3 rounded d-inline-block">
-                        <p class="mb-2"><%= lang.includes('fr') ? 'Tu viens de créer un super PDF de proxies, n\'hésites pas à me payer un petit kawa ou à m\'aider à commander des staple sur Cardmarket ! ☕' : 'You just created an awesome proxy PDF, feel free to buy me a coffee or help me order some staples on Cardmarket! ☕' %></p>
-                        <a href="https://www.buymeacoffee.com/BoBobby" target="_blank" rel="noopener noreferrer">
-                            <img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=BoBobby&button_colour=FFDD00&font_colour=000000&font_family=Poppins&outline_colour=000000&coffee_colour=ffffff" alt="Buy me a coffee">
-                        </a>
-                    </div>
-                </div>
-              <% } else { %>
-                <p><%= lang.includes('fr') ? 'Il semble qu\'il y ait un souci avec ton fichier YDK ou ton lien YDKE. Vérifie tout ça avant d\'essayer à nouveau !' : 'It seems there is an issue with your YDK file or YDKE link. Double-check everything before trying again!' %></p>
-                <%- include('../partials/form') %>
-                <% if (error.length > 0) { %>
-                  <%= error %> 
-                <% } %>
-              <% } %>
-            </div>
-        </div>
+          <% } %>
+          <p style="margin-top: 2rem;"><%= lang.includes('fr') ? 'Retourne à' : 'Go back to' %> <a href="/"><%= lang.includes('fr') ? 'l\'accueil' : 'home' %></a> <%= lang.includes('fr') ? 'pour réessayer' : 'to try again' %>.</p>
+        <% } %>
+      </div>
     </div>
-    
-    <%- include('../partials/footer');  %> 
-    <!-- Optional JavaScript -->
-    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+    <%- include('../partials/footer'); %> 
   </body>
 </html>
+

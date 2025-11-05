@@ -1,60 +1,257 @@
-<!-- index.ejs -->
-
 <!doctype html>
-<html lang="en">
+<html lang="<%= lang.includes('fr') ? 'fr' : 'en' %>">
   <head>
-    <%- include('../partials/head'); %> 
+    <% 
+      const pageTitle = 'YGOProxy.com - ' + (lang.includes('fr') ? 'Votre générateur de proxy YGO gratuit' : 'Your free YGO proxy generator');
+      const pageDescription = lang.includes('fr') ? 'Générateur de proxy Yu-Gi-Oh! simple, gratuit et rapide. Créez des PDF de proxies à partir de fichiers YDK ou codes YDKE.' : 'Make Yu-Gi-Oh! proxies cards quickly, easily and for free. Create proxy PDFs from YDK files or YDKE codes.';
+    %>
+    <%- include('../partials/head', { title: pageTitle, description: pageDescription, canonical: 'https://ygoproxy.com/' }); %> 
     <style>
-      .new-feature {
-        color: orange;
-        font-weight: bold;
+      .hero {
+        text-align: center;
+        margin-bottom: 2rem;
+      }
+
+      .intro-text {
+        font-size: 1.15rem;
+        color: var(--text-secondary);
+        max-width: 700px;
+        margin: 0 auto 2rem;
+      }
+
+      .new-badge {
+        display: inline-block;
+        background: linear-gradient(135deg, var(--accent-orange), #ff6b6b);
+        color: white;
+        padding: 0.4rem 1rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin: 1rem 0;
+      }
+
+      .new-badge a {
+        color: white;
+      }
+
+      .form-container {
+        max-width: 600px;
+        margin: 0 auto;
+      }
+
+      .form-group {
+        margin-bottom: 1.5rem;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: var(--text);
+        font-size: 0.95rem;
+      }
+
+      input[type="file"],
+      textarea {
+        width: 100%;
+        padding: 0.875rem;
+        background: var(--bg);
+        border: 2px solid var(--border);
+        border-radius: 8px;
+        color: var(--text);
+        font-family: inherit;
+        font-size: 1rem;
+        transition: border-color 0.3s ease;
+      }
+
+      input[type="file"]:focus,
+      textarea:focus {
+        outline: none;
+        border-color: var(--accent-blue);
+      }
+
+      .divider {
+        text-align: center;
+        margin: 1.5rem 0;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+      }
+
+      .btn-submit {
+        width: 100%;
+        padding: 1rem;
+        background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        font-family: inherit;
+      }
+
+      .btn-submit:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(74, 144, 226, 0.3);
+      }
+
+      .btn-submit:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .steps-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin: 0.75rem 0;
+      }
+
+      .step-item {
+        text-align: center;
+        padding: 1rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        cursor: default;
+      }
+
+      .step-item:hover {
+        background: var(--bg);
+        transform: translateY(-3px);
+        box-shadow: 0 4px 12px rgba(74, 144, 226, 0.15);
+      }
+
+      .step-icon {
+        width: 60px;
+        height: 60px;
+        margin: 0 auto 1rem;
+        background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: white;
+      }
+
+      .donation-section {
+        text-align: center;
+        padding: 2rem;
+        margin-top: 2rem;
+      }
+
+      .donation-text {
+        color: var(--text-secondary);
+        margin-bottom: 1.5rem;
+        font-size: 1rem;
+      }
+
+      .error-message {
+        color: #ff6b6b;
+        margin-top: 0.5rem;
+        font-size: 0.9rem;
+      }
+
+      @media (max-width: 768px) {
+        .steps-grid {
+          grid-template-columns: 1fr;
+        }
       }
     </style>
   </head>
   <body>
     <%- include('../partials/header'); %> 
 
-    <div class="container mt-5">
-        <div class="row">
-            <div class="col-md-12">
-                <h1><%= lang.includes('fr') ? 'Bienvenue sur YGOProxy !' : 'Welcome to YGOProxy!'%></h1>
-              </div>
-            </div>
-            <div class="row">
-              <div class="col-md-12">
-                <p><%= lang.includes('fr') ? 'Cet outil très simple va te permettre de générer automatiquement et très facilement un fichier PDF de proxies prêt à imprimer, à partir d\'un simple fichier YDK ou en entrant le code YDKE.' : 'This simple tool will allow you to convert automatically and very easily an YDK decklist into a ready-to-print proxy PDF file, or by entering the YDKE code.' %></p>
-                <p><span class="new-feature"><%= lang.includes('fr') ? 'Nouveau : ' : 'New: ' %></span><%- lang.includes('fr') ? 'Tu peux aussi utiliser notre <a href="/calculator">calculatrice partagée</a> pour suivre tes points de vie en temps réel avec ton adversaire pendant tes matchs, ou directement sur <a href="https://calc.ygoproxy.com" target="_blank" rel="noopener noreferrer">calc.ygoproxy.com</a> !' : 'You can also use our <a href="/calculator">shared calculator</a> to track your life points in real-time with your opponent during your matches, or directly on <a href="https://calc.ygoproxy.com" target="_blank" rel="noopener noreferrer">calc.ygoproxy.com</a>!' %></p>
-                <p><%= lang.includes('fr') ? 'Trois étapes :' : 'Three simple steps:' %></p>
-                <ul>
-                    <li><%= lang.includes('fr') ? 'Recherche ton fichier YDK à l\'aide du formulaire ou entre le code YDKE' : 'Upload your YDK file deck or enter YDKE code' %></li>
-                    <li><%= lang.includes('fr') ? 'Clique sur le bouton "Proxyfier !"' : 'Click on "Proxify!" button' %></li>
-                    <li><%= lang.includes('fr') ? 'Télécharge et imprime (sans adapter les marges, c\'est important) ton fichier PDF disponible sur le lien que tu viens de récupérer !' : 'Download and print your proxies set!' %></li>
-                    <li><%= lang.includes('fr') ? 'Etape bonus : Bon jeu ;)' : 'Extra step: Enjoy!' %></li>
-                </ul>
-            </div>
+    <div class="wrapper">
+      <div class="hero">
+        <h1><%= lang.includes('fr') ? 'Bienvenue sur YGOProxy !' : 'Welcome to YGOProxy!'%></h1>
+        <p class="intro-text">
+          <%= lang.includes('fr') ? 'Cet outil très simple va te permettre de générer automatiquement et très facilement un fichier PDF de proxies prêt à imprimer, à partir d\'un simple fichier YDK ou en entrant le code YDKE.' : 'This simple tool will allow you to convert automatically and very easily an YDK decklist into a ready-to-print proxy PDF file, or by entering the YDKE code.' %>
+        </p>
+        <div class="new-badge">
+          <span><%= lang.includes('fr') ? 'Nouveau : ' : 'New: ' %></span>
+          <%- lang.includes('fr') ? 'Tu peux aussi utiliser notre <a href="/calculator">calculatrice partagée</a> pour suivre tes points de vie en temps réel avec ton adversaire pendant tes matchs, ou directement sur <a href="https://calc.ygoproxy.com" target="_blank" rel="noopener noreferrer">calc.ygoproxy.com</a> !' : 'You can also use our <a href="/calculator">shared calculator</a> to track your life points in real-time with your opponent during your matches, or directly on <a href="https://calc.ygoproxy.com" target="_blank" rel="noopener noreferrer">calc.ygoproxy.com</a>!' %>
         </div>
+      </div>
+
+      <div class="content-box form-container">
+        <form action="/upload-decklist" method="post" enctype="multipart/form-data" id="proxyForm">
+          <div class="form-group">
+            <label for="deckfile"><%= lang.includes('fr') ? 'Fichier YDK :' : 'YDK File:' %></label>
+            <input type="file" name="deckfile" id="deckfile" accept=".ydk">
+          </div>
+          <div class="divider">- <%= lang.includes('fr') ? 'OU' : 'OR' %> -</div>
+          <div class="form-group">
+            <label for="ydkeCode"><%= lang.includes('fr') ? 'Code YDKE :' : 'YDKE Code:' %></label>
+            <textarea name="ydkeCode" id="ydkeCode" rows="4" placeholder="ydke://..."></textarea>
+          </div>
+          <div class="error-message" id="errorMessage"></div>
+          <button type="submit" class="btn-submit" id="proxyButton" disabled>
+            <%= lang.includes('fr') ? 'Proxyfier !' : 'Proxify!' %>
+          </button>
+        </form>
+      </div>
+
+      <div class="content-box" style="margin-top: 1.5rem; padding: 1.5rem;">
+        <div class="steps-grid">
+          <div class="step-item">
+            <div class="step-icon">1</div>
+            <p><%= lang.includes('fr') ? 'Choisis ton fichier YDK ou code YDKE' : 'Choose your YDK file or YDKE code' %></p>
+          </div>
+          <div class="step-item">
+            <div class="step-icon">2</div>
+            <p><%= lang.includes('fr') ? 'Clique sur "Proxyfier !"' : 'Click "Proxify!"' %></p>
+          </div>
+          <div class="step-item">
+            <div class="step-icon">3</div>
+            <p><%= lang.includes('fr') ? 'Télécharge ton PDF' : 'Download your PDF' %></p>
+          </div>
+          <div class="step-item">
+            <div class="step-icon">4</div>
+            <p><%= lang.includes('fr') ? 'Kiff tes proxy ;)' : 'Enjoy your proxies ;)' %></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="content-box donation-section">
+        <p class="donation-text">
+          <%= lang.includes('fr') ? 'Si cet outil t\'a aidé à créer tes proxies, n\'hésites pas à me payer un café ou à m\'aider à commander des staple sur Cardmarket ! ☕' : 'If this tool helped you create your proxies, feel free to buy me a coffee or help me order some staples on Cardmarket! ☕' %>
+        </p>
+        <a href="https://www.buymeacoffee.com/BoBobby" target="_blank" rel="noopener noreferrer">
+          <img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=BoBobby&button_colour=FFDD00&font_colour=000000&font_family=Poppins&outline_colour=000000&coffee_colour=ffffff" alt="Buy me a coffee">
+        </a>
+      </div>
     </div>
 
-    <%- include('../partials/form') %>
-    
-    <div class="container mt-4 mb-4">
-        <div class="row justify-content-md-center">
-            <div class="col-md-6 text-center">
-                <div class="bg-light p-3 rounded">
-                    <p class="mb-2"><%= lang.includes('fr') ? 'Si cet outil t\'a aidé à créer tes proxies, n\'hésites pas à me payer un café ou à m\'aider à commander des staple sur Cardmarket ! ☕' : 'If this tool helped you create your proxies, feel free to buy me a coffee or help me order some staples on Cardmarket! ☕' %></p>
-                    <a href="https://www.buymeacoffee.com/BoBobby" target="_blank" rel="noopener noreferrer">
-                        <img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=BoBobby&button_colour=FFDD00&font_colour=000000&font_family=Poppins&outline_colour=000000&coffee_colour=ffffff" alt="Buy me a coffee">
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-    
     <%- include('../partials/footer'); %> 
-    <!-- Optional JavaScript -->
-    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+    <script>
+      const deckfileInput = document.getElementById('deckfile');
+      const ydkeInput = document.getElementById('ydkeCode');
+      const proxyButton = document.getElementById('proxyButton');
+      const errorMessage = document.getElementById('errorMessage');
+
+      function updateButtonState() {
+        const hasFile = deckfileInput.files.length > 0;
+        const hasCode = ydkeInput.value.trim().length > 0;
+
+        if ((hasFile && hasCode) || (!hasFile && !hasCode)) {
+          proxyButton.disabled = true;
+          errorMessage.textContent = '<%= lang.includes("fr") ? "Veuillez fournir uniquement un fichier YDK ou un code YDKE." : "Please provide either a YDK file or a YDKE code, not both." %>';
+        } else if (hasFile || hasCode) {
+          proxyButton.disabled = false;
+          errorMessage.textContent = '';
+        } else {
+          proxyButton.disabled = true;
+          errorMessage.textContent = '<%= lang.includes("fr") ? "Veuillez fournir un fichier YDK ou un code YDKE." : "Please provide a YDK file or a YDKE code." %>';
+        }
+      }
+
+      deckfileInput.addEventListener('change', updateButtonState);
+      ydkeInput.addEventListener('input', updateButtonState);
+    </script>
   </body>
 </html>
+

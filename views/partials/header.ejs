@@ -1,37 +1,11 @@
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <a class="navbar-brand" href="/">YGOProxy</a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav mr-auto">
-        <% if (page == 'home' || page == '') { %>
-            <li class="nav-item active">
-                <a class="nav-link" href="/"><%= lang.includes('fr') ? 'Accueil' : 'Home' %> <span class="sr-only">(current)</span></a>
-            </li>
-        <% } else { %>
-            <li class="nav-item">
-                <a class="nav-link" href="/"><%= lang.includes('fr') ? 'Accueil' : 'Home' %></a>
-            </li>
-        <% } %>
-        <% if (page == 'calculator') { %>
-            <li class="nav-item active">
-                <a class="nav-link" href="/calculator"><%= lang.includes('fr') ? 'Calculatrice partagée' : 'Shared Calculator' %> <span class="badge badge-warning ml-1"><%= lang.includes('fr') ? 'Nouveau !' : 'New!' %></span> <span class="sr-only">(current)</span></a>
-            </li>
-        <% } else { %>
-            <li class="nav-item">
-                <a class="nav-link" href="/calculator"><%= lang.includes('fr') ? 'Calculatrice partagée' : 'Shared Calculator' %> <span class="badge badge-warning ml-1"><%= lang.includes('fr') ? 'Nouveau !' : 'New!' %></span></a>
-            </li>
-        <% } %>
-        <% if (page == 'credits') { %>
-            <li class="nav-item active">
-                <a class="nav-link" href="/credits"><%= lang.includes('fr') ? 'Crédits' : 'Credits' %> <span class="sr-only">(current)</span></a>
-            </li>
-        <% } else { %>
-            <li class="nav-item">
-                <a class="nav-link" href="/credits"><%= lang.includes('fr') ? 'Crédits' : 'Credits' %></a>
-            </li>
-        <% } %>
-        </ul>
-    </div>
-</nav>
+<div class="theme-toggle" onclick="toggleTheme()">🌓</div>
+
+<header>
+  <a href="/" class="logo">YGOProxy</a>
+  <nav>
+    <a href="/" class="<%= page == 'home' || page == '' ? 'active' : '' %>"><%= lang.includes('fr') ? 'Accueil' : 'Home' %></a>
+    <a href="/calculator" class="<%= page == 'calculator' ? 'active' : '' %>"><%= lang.includes('fr') ? 'Calculatrice' : 'Calculator' %></a>
+    <a href="/credits" class="<%= page == 'credits' ? 'active' : '' %>"><%= lang.includes('fr') ? 'Crédits' : 'Credits' %></a>
+  </nav>
+</header>
+

@@ -1,32 +1,244 @@
-<title>YGOProxy.com - <%= lang.includes('fr') ? 'Votre générateur de proxy YGO gratuit' : 'Your free YGO proxy generator' %> </title>
-<!-- Required meta tags -->
+<% if (typeof title !== 'undefined') { %>
+<title><%= title %></title>
+<% } else { %>
+<title>YGOProxy.com - <%= lang.includes('fr') ? 'Votre générateur de proxy YGO gratuit' : 'Your free YGO proxy generator' %></title>
+<% } %>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<% if (lang.includes('fr')) { %>
+<% if (typeof description !== 'undefined') { %>
+    <meta name="description" content="<%= description %>">
+<% } else if (lang.includes('fr')) { %>
     <meta name="description" content="Générateur de proxy Yu-Gi-Oh! simple, gratuit et rapide">
 <% } else { %>
     <meta name="description" content="Make Yu-Gi-Oh! proxies cards quickly, easily and for free">
 <% } %>
+<meta name="robots" content="index, follow">
+<% if (typeof canonical !== 'undefined') { %>
+<link rel="canonical" href="<%= canonical %>">
+<% } %>
 
-<!-- Bootstrap CSS -->
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-<style type="text/css">
-    html {
-	height: 100%;
-	}
-    body {
-	min-height: 100%;
-	position: relative;
-	padding-bottom: 6rem;
-	}
-    footer {
-	position: absolute;
-	bottom: 0;
-	left: 0;
-	right: 0;
-	padding-top: 100%;
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  :root {
+    --bg-dark: #0a0e1a;
+    --bg-light: #fafafa;
+    --surface-dark: #1a1f2e;
+    --surface-light: #ffffff;
+    --text-dark: #e8e8e8;
+    --text-light: #1a1f2e;
+    --accent-blue: #4a90e2;
+    --accent-purple: #9b59b6;
+    --accent-orange: #e67e22;
+    --border-dark: rgba(255, 255, 255, 0.1);
+    --border-light: rgba(0, 0, 0, 0.1);
+    --link-blue-dark: #b3d9ff;
+    --link-blue-light: #0066cc;
+  }
+
+  [data-theme="dark"] {
+    --bg: var(--bg-dark);
+    --surface: var(--surface-dark);
+    --text: var(--text-dark);
+    --text-secondary: #b0b0b0;
+    --border: var(--border-dark);
+    --link-color: var(--link-blue-dark);
+  }
+
+  [data-theme="light"] {
+    --bg: var(--bg-light);
+    --surface: var(--surface-light);
+    --text: var(--text-light);
+    --text-secondary: #666666;
+    --border: var(--border-light);
+    --link-color: var(--link-blue-light);
+  }
+
+  body {
+    font-family: 'Space Grotesk', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    transition: background 0.3s ease, color 0.3s ease;
+    line-height: 1.6;
+  }
+
+  .theme-toggle {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    z-index: 1000;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 2px solid var(--border);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .theme-toggle:hover {
+    transform: rotate(15deg) scale(1.1);
+  }
+
+  .wrapper {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 1.5rem;
+    min-height: calc(100vh - 200px);
+  }
+
+  header {
+    padding: 1.5rem 0;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 2rem;
+  }
+
+  .logo {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.75rem;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  nav {
+    margin-top: 1rem;
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  nav a {
+    color: var(--text);
+    text-decoration: none;
+    font-weight: 500;
+    padding: 0.5rem 1.5rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+  }
+
+  nav a:hover {
+    border-color: var(--border);
+    background: var(--surface);
+  }
+
+  nav a.active {
+    border-color: var(--accent-blue);
+    background: var(--surface);
+  }
+
+  .content-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.75rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  }
+
+  h1 {
+    font-size: clamp(2rem, 5vw, 3rem);
+    margin-bottom: 1.5rem;
+    font-weight: 700;
+  }
+
+  h2 {
+    font-size: clamp(1.5rem, 4vw, 2rem);
+    margin-bottom: 1rem;
+    font-weight: 600;
+  }
+
+  h3 {
+    font-size: clamp(1.25rem, 3vw, 1.5rem);
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+  }
+
+  p {
+    margin-bottom: 1rem;
+    color: var(--text);
+  }
+
+  a {
+    color: var(--link-color);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    transition: opacity 0.3s ease;
+  }
+
+  a:hover {
+    opacity: 0.8;
+  }
+
+  footer {
+    margin-top: 4rem;
+    padding: 2rem 0;
+    border-top: 1px solid var(--border);
+    text-align: center;
+  }
+
+  .disclaimer {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 1rem;
+  }
+
+  @media (max-width: 768px) {
+    .wrapper {
+      padding: 1rem;
     }
-    p.disclaimer {
-        font-size: 0.8em;
+
+    header {
+      padding: 1rem 0;
+      margin-bottom: 1.5rem;
     }
+
+    nav {
+      gap: 1rem;
+    }
+
+    .content-box {
+      padding: 1.5rem;
+    }
+  }
 </style>
+
+<script>
+  // Load saved theme
+  const savedTheme = localStorage.getItem('theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+
+  function toggleTheme() {
+    const html = document.documentElement;
+    const currentTheme = html.getAttribute('data-theme');
+    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+    html.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+  }
+</script>
+
