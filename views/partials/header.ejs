@@ -14,6 +14,15 @@
                 <a class="nav-link" href="/"><%= lang.includes('fr') ? 'Accueil' : 'Home' %></a>
             </li>
         <% } %>
+        <% if (page == 'calculator') { %>
+            <li class="nav-item active">
+                <a class="nav-link" href="/calculator"><%= lang.includes('fr') ? 'Calculatrice partagée' : 'Shared Calculator' %> <span class="badge badge-warning ml-1"><%= lang.includes('fr') ? 'Nouveau !' : 'New!' %></span> <span class="sr-only">(current)</span></a>
+            </li>
+        <% } else { %>
+            <li class="nav-item">
+                <a class="nav-link" href="/calculator"><%= lang.includes('fr') ? 'Calculatrice partagée' : 'Shared Calculator' %> <span class="badge badge-warning ml-1"><%= lang.includes('fr') ? 'Nouveau !' : 'New!' %></span></a>
+            </li>
+        <% } %>
         <% if (page == 'credits') { %>
             <li class="nav-item active">
                 <a class="nav-link" href="/credits"><%= lang.includes('fr') ? 'Crédits' : 'Credits' %> <span class="sr-only">(current)</span></a>

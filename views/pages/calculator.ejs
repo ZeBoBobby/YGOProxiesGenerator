@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <%- include('../partials/head'); %> 
+    <style>
+      .calculator-feature {
+        background: linear-gradient(135deg, #1e3c72, #2a5298);
+        color: white;
+        padding: 2rem;
+        border-radius: 15px;
+        margin: 2rem 0;
+      }
+      .feature-card {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin: 1rem 0;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      .calculator-link {
+        display: inline-block;
+        margin-top: 1rem;
+        padding: 1rem 2rem;
+        background: #FFDD00;
+        color: #000;
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: bold;
+        transition: transform 0.2s;
+      }
+      .calculator-link:hover {
+        transform: scale(1.05);
+        color: #000;
+        text-decoration: none;
+      }
+      .feature-list {
+        list-style: none;
+        padding-left: 0;
+      }
+      .feature-list li {
+        padding: 0.5rem 0;
+        padding-left: 1.5rem;
+        position: relative;
+      }
+      .feature-list li:before {
+        content: "✓";
+        position: absolute;
+        left: 0;
+        color: #28a745;
+        font-weight: bold;
+      }
+      .screenshot-container {
+        text-align: center;
+        margin: 2rem 0;
+      }
+      .screenshot-container img {
+        max-width: 400px;
+        width: 100%;
+        height: auto;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+      }
+      @media (max-width: 768px) {
+        .screenshot-container img {
+          max-width: 90%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <%- include('../partials/header'); %> 
+
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-12">
+                <h1><%= lang.includes('fr') ? 'Calculatrice partagée' : 'Shared Calculator' %></h1>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="calculator-feature">
+                    <h2 class="text-center mb-4"><%= lang.includes('fr') ? 'Synchronise tes points de vie en temps réel !' : 'Synchronize your life points in real-time!' %></h2>
+                    <p class="text-center"><%= lang.includes('fr') ? 'Cette calculatrice partagée te permet de suivre tes points de vie avec ton adversaire, avec un timer intégré, le tout synchronisé en temps réel grâce à un ID partagé.' : 'This shared calculator allows you to track your life points with your opponent, with an integrated timer, all synchronized in real-time through a shared ID.' %></p>
+                    <div class="text-center mt-3">
+                        <a href="https://calc.ygoproxy.com" target="_blank" rel="noopener noreferrer" class="calculator-link">
+                            <%= lang.includes('fr') ? '🚀 Accéder à la calculatrice partagée' : '🚀 Access the shared calculator' %>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="screenshot-container">
+                    <img src="/calculator/screenshot.jpg" alt="<%= lang.includes('fr') ? 'Aperçu de la calculatrice partagée' : 'Shared calculator preview' %>" class="img-fluid">
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="feature-card">
+                    <h3><%= lang.includes('fr') ? '🧮 Fonctionnalités' : '🧮 Features' %></h3>
+                    <ul class="feature-list">
+                        <li><%= lang.includes('fr') ? 'Calculatrice de points de vie synchronisée' : 'Synchronized life points calculator' %></li>
+                        <li><%= lang.includes('fr') ? 'Timer intégré pour les matchs' : 'Integrated timer for matches' %></li>
+                        <li><%= lang.includes('fr') ? 'Sessions partagées via un ID' : 'Shared sessions via an ID' %></li>
+                        <li><%= lang.includes('fr') ? 'Un overlay dédié compatible OBS & cie.' : 'A dedicated overlay compatible with OBS & more' %></li>
+                        <li><%= lang.includes('fr') ? 'Lancement de pièce et de dé' : 'Coin flip and dice roll' %></li>
+                        <li><%= lang.includes('fr') ? 'Partage le temps et les points de vie avec ton adversaire' : 'Share time and life points with your opponent' %></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="feature-card">
+                    <h3><%= lang.includes('fr') ? '💡 Comment ça marche ?' : '💡 How does it work?' %></h3>
+                    <p><%= lang.includes('fr') ? 'Lorsque tu ouvres la calculatrice, tu peux :' : 'When you open the calculator, you can:' %></p>
+                    <ol>
+                        <li><%= lang.includes('fr') ? 'Créé une nouvelle session et obtiens un ID' : 'Create a new session and get an ID' %></li>
+                        <li><%= lang.includes('fr') ? 'Partage cet ID ou l\'url directe avec ton adversaire, il rejoindra ta session' : 'Share this ID or the direct URL with your opponent, they will join your session' %></li>
+                        <li><%= lang.includes('fr') ? 'Suis tes points de vie en temps réel, vous serez tous les deux synchronisés !' : 'Track your life points in real-time, you\'ll both be synchronized!' %></li>
+                        <li><%= lang.includes('fr') ? 'Utilise l\'overlay OBS pour afficher le score sur une scène de streaming' : 'Use the OBS overlay to display the score on a streaming scene' %></li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-md-12 text-center">
+                <a href="https://calc.ygoproxy.com" target="_blank" rel="noopener noreferrer" class="calculator-link">
+                    <%= lang.includes('fr') ? '🚀 Accéder à la calculatrice partagée' : '🚀 Access the shared calculator' %>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <%- include('../partials/footer'); %> 
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+  </body>
+</html>
+
