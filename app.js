@@ -41,6 +41,7 @@ app.use(favicon(path.join(__dirname, '.', 'favicon.ico')));
 app.disable('etag');
 
 app.use(express.static('pdf'));
+app.use(express.static('images'));
 
 app.set('view engine', 'ejs');
 
