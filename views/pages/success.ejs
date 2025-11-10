@@ -82,6 +82,26 @@
           <div style="margin: 1.5rem 0;">
             <a href="<%= filename %>" target="_blank" rel="noopener noreferrer" class="pdf-link"><%= filename %></a>
           </div>
+          
+          <% if (warning && warning.length > 0) { %>
+            <div style="margin-top: 1.5rem; padding: 1rem; background: rgba(255, 193, 7, 0.1); border: 1px solid #ffc107; border-radius: 8px; color: #856404;">
+              <strong>⚠ <%= lang.includes('fr') ? 'Avertissement' : 'Warning' %></strong>
+              <p style="margin: 0.5rem 0 0 0;"><%= warning %></p>
+              <% if (missingCards && missingCards.length > 0) { %>
+                <details style="margin-top: 0.5rem;">
+                  <summary style="cursor: pointer; font-weight: 600;">
+                    <%= lang.includes('fr') ? 'Voir les détails' : 'See details' %>
+                  </summary>
+                  <ul style="margin: 0.5rem 0 0 1.5rem; padding: 0;">
+                    <% missingCards.forEach(card => { %>
+                      <li>ID: <%= card.id %> - <%= card.error %></li>
+                    <% }); %>
+                  </ul>
+                </details>
+              <% } %>
+            </div>
+          <% } %>
+          
           <p style="margin-top: 2rem;"><%= lang.includes('fr') ? 'Clique sur' : 'Click on' %> <a href="/"><%= lang.includes('fr') ? 'ce lien' : 'this link' %></a> <%= lang.includes('fr') ? 'pour créer d\'autres proxies' : 'to make new proxies.' %></p>
           
           <div class="donation-box">
