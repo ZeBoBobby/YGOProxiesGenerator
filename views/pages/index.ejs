@@ -2,8 +2,8 @@
 <html lang="<%= lang.includes('fr') ? 'fr' : 'en' %>">
   <head>
     <% 
-      const pageTitle = 'YGOProxy.com - ' + (lang.includes('fr') ? 'Votre générateur de proxy YGO gratuit' : 'Your free YGO proxy generator');
-      const pageDescription = lang.includes('fr') ? 'Générateur de proxy Yu-Gi-Oh! simple, gratuit et rapide. Créez des PDF de proxies à partir de fichiers YDK ou codes YDKE.' : 'Make Yu-Gi-Oh! proxies cards quickly, easily and for free. Create proxy PDFs from YDK files or YDKE codes.';
+      const pageTitle = 'YGOProxy.com - ' + (lang.includes('fr') ? 'Ton générateur de proxy YGO gratuit' : 'Your free YGO proxy generator');
+      const pageDescription = lang.includes('fr') ? 'Générateur de proxy Yu-Gi-Oh! simple, gratuit et rapide. Crée des PDF de proxies aux bonnes dimensions à partir de fichiers YDK, codes YDKE ou en créant ta liste à partir de zéro avec le builder.' : 'Make Yu-Gi-Oh! proxies cards quickly, easily and for free. Create proxy PDFs with correct dimensions from YDK files, YDKE codes, or build your list from scratch with the builder.';
     %>
     <%- include('../partials/head', { title: pageTitle, description: pageDescription, canonical: 'https://ygoproxy.com/' }); %> 
     <style>
@@ -41,6 +41,7 @@
 
       .form-group {
         margin-bottom: 1.5rem;
+        padding: 0.5rem 0;
       }
 
       label {
@@ -51,7 +52,36 @@
         font-size: 0.95rem;
       }
 
-      input[type="file"],
+      input[type="file"] {
+        width: 100%;
+        padding: 0.875rem;
+        background: var(--bg);
+        border: 2px solid var(--border);
+        border-radius: 8px;
+        color: var(--text);
+        font-family: inherit;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        cursor: pointer;
+      }
+
+      input[type="file"]::file-selector-button {
+        padding: 0.5rem 1rem;
+        margin-right: 1rem;
+        background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      input[type="file"]::file-selector-button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(74, 144, 226, 0.3);
+      }
+
       textarea {
         width: 100%;
         padding: 0.875rem;
@@ -61,13 +91,26 @@
         color: var(--text);
         font-family: inherit;
         font-size: 1rem;
-        transition: border-color 0.3s ease;
+        transition: all 0.3s ease;
+        min-height: 3.5rem;
+        max-height: 3.5rem;
+        overflow: hidden;
+        resize: none;
+        line-height: 1.5;
+        display: block;
       }
 
       input[type="file"]:focus,
       textarea:focus {
         outline: none;
         border-color: var(--accent-blue);
+        box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+      }
+
+      textarea:focus {
+        max-height: 8rem;
+        min-height: 6rem;
+        resize: vertical;
       }
 
       .divider {
@@ -287,9 +330,458 @@
         padding: 1rem;
       }
 
+      .btn-builder-toggle {
+        width: 100%;
+        padding: 1rem;
+        background: linear-gradient(135deg, var(--accent-orange), #ff6b6b);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        font-family: inherit;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+      }
+
+      .btn-builder-toggle:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(255, 107, 107, 0.3);
+      }
+
+      .builder-toggle-icon {
+        transition: transform 0.3s ease;
+      }
+
+      .builder-toggle-icon.rotated {
+        transform: rotate(180deg);
+      }
+
+      .builder-section {
+        margin-top: 1.5rem;
+        padding: 1.5rem;
+        background: var(--bg);
+        border-radius: 8px;
+        border: 2px solid var(--border);
+      }
+
+      .builder-instructions {
+        margin-bottom: 1.5rem;
+        padding: 0.75rem;
+        background: rgba(74, 144, 226, 0.1);
+        border-radius: 6px;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+      }
+
+      .builder-language-switch {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+        padding: 0.5rem 0;
+      }
+
+      .builder-flag {
+        width: 32px;
+        height: 24px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border-radius: 4px;
+        overflow: hidden;
+        opacity: 0.4;
+        filter: grayscale(100%);
+      }
+
+      .builder-flag.active {
+        opacity: 1;
+        filter: grayscale(0%);
+        transform: scale(1.1);
+      }
+
+      .builder-flag:hover {
+        opacity: 0.7;
+        filter: grayscale(50%);
+      }
+
+      .builder-flag.active:hover {
+        opacity: 1;
+        filter: grayscale(0%);
+      }
+
+      .builder-flag svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+
+      .builder-flag-separator {
+        color: var(--text-secondary);
+        font-size: 1rem;
+        font-weight: 300;
+        margin: 0 0.25rem;
+      }
+
+      .builder-instructions p {
+        margin: 0 0 0.75rem 0;
+      }
+
+      .builder-shortcuts {
+        margin-top: 0.75rem;
+        padding-top: 0.75rem;
+        border-top: 1px solid rgba(74, 144, 226, 0.2);
+      }
+
+      .builder-shortcuts > strong {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: var(--text);
+        font-size: 0.85rem;
+      }
+
+      .builder-shortcuts li strong {
+        display: inline;
+      }
+
+      .builder-shortcuts ul {
+        margin: 0;
+        padding-left: 1.25rem;
+        list-style: none;
+      }
+
+      .builder-shortcuts li {
+        font-size: 0.85rem;
+        margin-bottom: 0.25rem;
+        position: relative;
+      }
+
+      .builder-shortcuts li:before {
+        content: "•";
+        position: absolute;
+        left: -1rem;
+        color: var(--accent-blue);
+      }
+
+      .builder-lines {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .builder-line {
+        display: flex;
+        gap: 0.75rem;
+        align-items: flex-start;
+      }
+
+      .builder-search-container {
+        flex: 1;
+        position: relative;
+      }
+
+      .builder-search-input {
+        width: 100%;
+        padding: 0.875rem;
+        background: var(--bg);
+        border: 2px solid var(--border);
+        border-radius: 8px;
+        color: var(--text);
+        font-family: inherit;
+        font-size: 1rem;
+        transition: border-color 0.3s ease;
+      }
+
+      .builder-search-input:focus {
+        outline: none;
+        border-color: var(--accent-blue);
+      }
+
+      .builder-search-results {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: var(--bg);
+        border: 2px solid var(--border);
+        border-top: none;
+        border-radius: 0 0 8px 8px;
+        max-height: 300px;
+        overflow-y: auto;
+        z-index: 1000;
+        display: none;
+      }
+
+      .builder-search-results.show {
+        display: block;
+      }
+
+      .builder-search-result {
+        padding: 0.75rem;
+        cursor: pointer;
+        border-bottom: 1px solid var(--border);
+        transition: background 0.2s ease;
+        position: relative;
+      }
+
+      .builder-search-result:hover {
+        background: rgba(74, 144, 226, 0.1);
+      }
+
+      .builder-search-result.selected {
+        background: rgba(74, 144, 226, 0.2);
+      }
+
+      .builder-search-result-name {
+        font-weight: 500;
+        color: var(--text);
+      }
+
+      .builder-search-result-type {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        margin-top: 0.25rem;
+      }
+
+      .builder-card-preview {
+        position: absolute;
+        left: 100%;
+        top: 0;
+        margin-left: 1rem;
+        width: 200px;
+        background: var(--bg);
+        border: 2px solid var(--border);
+        border-radius: 8px;
+        padding: 0.5rem;
+        z-index: 1001;
+        display: none;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      }
+
+      .builder-card-preview.show {
+        display: block;
+      }
+
+      .builder-card-preview img {
+        width: 100%;
+        height: auto;
+        border-radius: 4px;
+      }
+
+      .builder-quantity {
+        width: 80px;
+        padding: 0.875rem;
+        background: var(--bg);
+        border: 2px solid var(--border);
+        border-radius: 8px;
+        color: var(--text);
+        font-family: inherit;
+        font-size: 1rem;
+        text-align: center;
+      }
+
+      .builder-quantity:focus {
+        outline: none;
+        border-color: var(--accent-blue);
+      }
+
+      .builder-line-actions {
+        display: flex;
+        gap: 0.5rem;
+      }
+
+      .builder-btn-add,
+      .builder-btn-remove {
+        padding: 0.875rem 1rem;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s ease;
+        font-family: inherit;
+      }
+
+      .builder-btn-add {
+        background: var(--accent-blue);
+        color: white;
+      }
+
+      .builder-btn-add:hover:not(:disabled) {
+        transform: translateY(-2px);
+      }
+
+      .builder-btn-add:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .builder-btn-remove {
+        background: #ff6b6b;
+        color: white;
+      }
+
+      .builder-btn-remove:hover {
+        transform: translateY(-2px);
+      }
+
+      .builder-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 2px solid var(--border);
+      }
+
+      .btn-builder-submit,
+      .btn-builder-cancel {
+        flex: 1;
+        padding: 1rem;
+        border: none;
+        border-radius: 8px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        font-family: inherit;
+      }
+
+      .btn-builder-submit {
+        background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+        color: white;
+      }
+
+      .btn-builder-submit:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(74, 144, 226, 0.3);
+      }
+
+      .btn-builder-submit:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .btn-builder-cancel {
+        background: var(--bg);
+        color: var(--text);
+        border: 2px solid var(--border);
+      }
+
+      .btn-builder-cancel:hover {
+        background: rgba(255, 107, 107, 0.1);
+        border-color: #ff6b6b;
+      }
+
+      .builder-added-cards {
+        margin-top: 1.5rem;
+        padding: 1rem;
+        background: rgba(74, 144, 226, 0.05);
+        border-radius: 8px;
+        border: 1px solid var(--border);
+      }
+
+      .builder-added-cards h4 {
+        margin: 0 0 1rem 0;
+        font-size: 1rem;
+        color: var(--text);
+      }
+
+      .builder-added-card {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.75rem;
+        margin-bottom: 0.5rem;
+        background: var(--bg);
+        border-radius: 6px;
+        border: 1px solid var(--border);
+        gap: 0.75rem;
+      }
+
+      .builder-added-card-thumbnail {
+        width: 50px;
+        height: 73px;
+        flex-shrink: 0;
+        border-radius: 4px;
+        overflow: hidden;
+        background: var(--border);
+      }
+
+      .builder-added-card-thumbnail img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .builder-added-card-info {
+        flex: 1;
+      }
+
+      .builder-added-card-name {
+        font-weight: 500;
+        color: var(--text);
+      }
+
+      .builder-added-card-quantity {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        margin-top: 0.25rem;
+      }
+
+      .builder-added-card-actions {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+      }
+
+      .builder-edit-quantity {
+        width: 60px;
+        padding: 0.5rem;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        text-align: center;
+        font-size: 0.9rem;
+        color: var(--text);
+      }
+
+      .builder-remove-icon {
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+        color: var(--text-secondary);
+        transition: all 0.2s ease;
+        flex-shrink: 0;
+      }
+
+      .builder-remove-icon:hover {
+        color: #ff6b6b;
+        transform: scale(1.1);
+      }
+
+      .builder-remove-icon svg {
+        width: 100%;
+        height: 100%;
+      }
+
       @media (max-width: 768px) {
         .steps-grid {
           grid-template-columns: 1fr;
+        }
+        
+        .builder-line {
+          flex-direction: column;
+        }
+        
+        .builder-card-preview {
+          position: relative;
+          left: auto;
+          top: auto;
+          margin-left: 0;
+          margin-top: 0.5rem;
         }
       }
     </style>
@@ -301,7 +793,7 @@
       <div class="hero">
         <h1><%= lang.includes('fr') ? 'Bienvenue sur YGOProxy !' : 'Welcome to YGOProxy!'%></h1>
         <p class="intro-text">
-          <%= lang.includes('fr') ? 'Cet outil très simple va te permettre de générer automatiquement et très facilement un fichier PDF de proxies prêt à imprimer, à partir d\'un simple fichier YDK ou en entrant le code YDKE.' : 'This simple tool will allow you to convert automatically and very easily an YDK decklist into a ready-to-print proxy PDF file, or by entering the YDKE code.' %>
+          <%- lang.includes('fr') ? 'Cet outil très simple va te permettre de générer automatiquement et très facilement un fichier PDF de proxies de cartes <strong>Yu-Gi-Oh!</strong> prêt à imprimer, aux <strong>bonnes dimensions</strong>, à partir d\'un <strong>fichier YDK</strong>, d\'un <strong>code YDKE</strong> ou en <strong>créant ta liste à partir de zéro</strong> !' : 'This simple tool will allow you to automatically and easily generate a ready-to-print <strong>Yu-Gi-Oh!</strong> card proxies PDF file with <strong>correct dimensions</strong>, from a <strong>YDK file</strong>, a <strong>YDKE code</strong> or by <strong>building your list from scratch</strong>!' %>
         </p>
         <div class="new-badge">
           <span><%= lang.includes('fr') ? 'Nouveau : ' : 'New: ' %></span>
@@ -318,8 +810,63 @@
           <div class="divider">- <%= lang.includes('fr') ? 'OU' : 'OR' %> -</div>
           <div class="form-group">
             <label for="ydkeCode"><%= lang.includes('fr') ? 'Code YDKE :' : 'YDKE Code:' %></label>
-            <textarea name="ydkeCode" id="ydkeCode" rows="4" placeholder="ydke://..."></textarea>
+            <textarea name="ydkeCode" id="ydkeCode" rows="1" placeholder="ydke://..."></textarea>
           </div>
+          <div class="divider">- <%= lang.includes('fr') ? 'OU' : 'OR' %> -</div>
+          <div class="form-group">
+            <label><%= lang.includes('fr') ? 'Builder :' : 'Builder:' %></label>
+            <button type="button" class="btn-builder-toggle" id="builderToggle">
+              <span class="new-badge-inline"><%= lang.includes('fr') ? 'Nouveau !' : 'New!' %></span>
+              <%= lang.includes('fr') ? 'Utilise le builder en partant de zéro !' : 'Use the builder from scratch!' %>
+              <span class="builder-toggle-icon" id="builderToggleIcon">▼</span>
+            </button>
+          </div>
+          
+          <!-- Builder Section (cachée par défaut) -->
+          <div class="builder-section" id="builderSection" style="display: none;">
+            <div class="builder-instructions">
+              <p><%= lang.includes('fr') ? 'Saisis le nom d\'une carte puis sélectionne la carte à ajouter parmi les résultats. Choisis la quantité et ajoute la carte à ta liste !' : 'Type a card name then select the card to add from the results. Choose the quantity and add the card to your list!' %></p>
+              <div class="builder-shortcuts">
+                <strong><%= lang.includes('fr') ? 'Raccourcis clavier :' : 'Keyboard shortcuts:' %></strong>
+                <ul>
+                  <li><%- lang.includes('fr') ? '<strong>↑/↓</strong> : Naviguer dans les résultats' : '<strong>↑/↓</strong> : Navigate results' %></li>
+                  <li><%- lang.includes('fr') ? '<strong>Entrée</strong> : Sélectionner/Ajouter la carte' : '<strong>Enter</strong> : Select/Add card' %></li>
+                  <li><%- lang.includes('fr') ? '<strong>Échap</strong> : Fermer les résultats' : '<strong>Esc</strong> : Close results' %></li>
+                </ul>
+              </div>
+            </div>
+            <div class="builder-language-switch">
+              <div class="builder-flag builder-flag-gb active" data-lang="en" title="English">
+                <svg viewBox="0 0 640 480" xmlns="http://www.w3.org/2000/svg">
+                  <path fill="#012169" d="M0 0h640v480H0z"/>
+                  <path fill="#FFF" d="m75 0 244 181L562 0h78v62L400 241l240 178v61H562L318 301 78 480H0v-60l238-177L0 64V0h75z"/>
+                  <path fill="#C8102E" d="m424 281 216 159v40L369 281h55zm-184 20 6 35L54 480H0l240-179zM640 0v3L391 191l2-44L590 0h50zM0 0l239 176h-60L0 42V0z"/>
+                  <path fill="#FFF" d="M241 0v480h160V0H241zM0 160v160h640V160H0z"/>
+                  <path fill="#C8102E" d="M0 193v96h640v-96H0zM273 0v480h96V0h-96z"/>
+                </svg>
+              </div>
+              <span class="builder-flag-separator">/</span>
+              <div class="builder-flag builder-flag-fr" data-lang="fr" title="Français">
+                <svg viewBox="0 0 640 480" xmlns="http://www.w3.org/2000/svg">
+                  <path fill="#fff" d="M0 0h640v480H0z"/>
+                  <path fill="#002654" d="M0 0h213.3v480H0z"/>
+                  <path fill="#ce1126" d="M426.7 0H640v480H426.7z"/>
+                </svg>
+              </div>
+            </div>
+            <div class="builder-lines" id="builderLines">
+              <!-- Les lignes seront ajoutées dynamiquement -->
+            </div>
+            <div class="builder-actions">
+              <button type="button" class="btn-builder-submit" id="builderSubmit" disabled>
+                <%= lang.includes('fr') ? 'Proxyfier ma liste' : 'Proxify my list' %>
+              </button>
+              <button type="button" class="btn-builder-cancel" id="builderCancel">
+                <%= lang.includes('fr') ? 'Annuler' : 'Cancel' %>
+              </button>
+            </div>
+          </div>
+          
           <div class="error-message" id="errorMessage"></div>
           <div class="remember-checkbox">
             <input type="checkbox" id="dontRemember" name="dontRemember">
@@ -335,7 +882,7 @@
       </div>
 
       <div class="content-box history-section" id="historySection" style="display: none; margin-top: 1.5rem;">
-        <h3><%= lang.includes('fr') ? 'Vos proxies précédents' : 'Your previous proxies' %></h3>
+        <h3><%= lang.includes('fr') ? 'Tes proxy de l\'époque du pharaon' : 'Your previous proxies' %></h3>
         <ul class="history-list" id="historyList">
           <li class="history-empty"><%= lang.includes('fr') ? 'Chargement...' : 'Loading...' %></li>
         </ul>
@@ -600,6 +1147,535 @@
 
       deckfileInput.addEventListener('change', updateButtonState);
       ydkeInput.addEventListener('input', updateButtonState);
+
+      // ========== BUILDER FUNCTIONALITY ==========
+      const builderToggle = document.getElementById('builderToggle');
+      const builderSection = document.getElementById('builderSection');
+      const builderToggleIcon = document.getElementById('builderToggleIcon');
+      const builderLines = document.getElementById('builderLines');
+      const builderSubmit = document.getElementById('builderSubmit');
+      const builderCancel = document.getElementById('builderCancel');
+      const builderFlags = document.querySelectorAll('.builder-flag');
+      
+      let addedCards = []; // Liste des cartes ajoutées : [{ id, name, quantity }]
+      let searchTimeouts = {}; // Pour le debounce
+      let selectedResultIndex = -1; // Pour la navigation clavier
+      let currentSearchLanguage = 'en'; // Langue de recherche actuelle
+      
+      // Charger la langue sauvegardée
+      const BUILDER_LANGUAGE_KEY = 'ygoproxy_builder_language';
+      const savedLanguage = localStorage.getItem(BUILDER_LANGUAGE_KEY);
+      if (savedLanguage) {
+        currentSearchLanguage = savedLanguage;
+        updateLanguageFlags(savedLanguage);
+      } else {
+        updateLanguageFlags('en');
+      }
+      
+      // Gérer les clics sur les drapeaux
+      builderFlags.forEach(flag => {
+        flag.addEventListener('click', () => {
+          const lang = flag.getAttribute('data-lang');
+          currentSearchLanguage = lang;
+          localStorage.setItem(BUILDER_LANGUAGE_KEY, lang);
+          updateLanguageFlags(lang);
+        });
+      });
+      
+      // Fonction pour mettre à jour l'état visuel des drapeaux
+      function updateLanguageFlags(activeLang) {
+        builderFlags.forEach(flag => {
+          const lang = flag.getAttribute('data-lang');
+          if (lang === activeLang) {
+            flag.classList.add('active');
+          } else {
+            flag.classList.remove('active');
+          }
+        });
+      }
+
+      // Toggle du builder
+      builderToggle.addEventListener('click', () => {
+        const isVisible = builderSection.style.display !== 'none';
+        builderSection.style.display = isVisible ? 'none' : 'block';
+        builderToggleIcon.classList.toggle('rotated', !isVisible);
+        
+        if (!isVisible) {
+          // Créer la première ligne si elle n'existe pas
+          if (builderLines.children.length === 0) {
+            addBuilderLine();
+          }
+        } else {
+          // Réinitialiser si on ferme
+          resetBuilder();
+          // S'assurer qu'il n'y a qu'une seule ligne
+          while (builderLines.children.length > 1) {
+            builderLines.removeChild(builderLines.lastChild);
+          }
+        }
+      });
+
+      // Bouton Annuler
+      builderCancel.addEventListener('click', () => {
+        if (addedCards.length > 0) {
+          const confirmMsg = isFr 
+            ? 'Es-tu sûr de vouloir annuler ? Toutes tes modifications seront perdues.'
+            : 'Are you sure you want to cancel? All your changes will be lost.';
+          if (confirm(confirmMsg)) {
+            resetBuilder();
+            builderSection.style.display = 'none';
+            builderToggleIcon.classList.remove('rotated');
+          }
+        } else {
+          builderSection.style.display = 'none';
+          builderToggleIcon.classList.remove('rotated');
+        }
+      });
+
+      // Fonction pour réinitialiser le builder
+      function resetBuilder() {
+        addedCards = [];
+        builderLines.innerHTML = '';
+        addBuilderLine();
+        updateBuilderSubmitButton();
+        updateAddedCardsList();
+        // S'assurer qu'il n'y a qu'une seule ligne
+        while (builderLines.children.length > 1) {
+          builderLines.removeChild(builderLines.lastChild);
+        }
+      }
+
+      // Fonction pour ajouter une nouvelle ligne de recherche
+      function addBuilderLine() {
+        const lineDiv = document.createElement('div');
+        lineDiv.className = 'builder-line';
+        lineDiv.innerHTML = `
+          <div class="builder-search-container">
+            <input type="text" class="builder-search-input" placeholder="${isFr ? 'Rechercher une carte...' : 'Search for a card...'}" autocomplete="off">
+            <div class="builder-search-results"></div>
+            <div class="builder-card-preview">
+              <img src="" alt="Card preview">
+            </div>
+          </div>
+          <input type="number" class="builder-quantity" min="1" value="1" placeholder="Qty">
+          <div class="builder-line-actions">
+            <button type="button" class="builder-btn-add" disabled>${isFr ? 'Ajouter' : 'Add'}</button>
+          </div>
+        `;
+        
+        builderLines.appendChild(lineDiv);
+        
+        const searchInput = lineDiv.querySelector('.builder-search-input');
+        const searchResults = lineDiv.querySelector('.builder-search-results');
+        const quantityInput = lineDiv.querySelector('.builder-quantity');
+        const addButton = lineDiv.querySelector('.builder-btn-add');
+        const preview = lineDiv.querySelector('.builder-card-preview');
+        const previewImg = preview.querySelector('img');
+        
+        let currentSearchResults = [];
+        let selectedCard = null;
+        
+        // Recherche avec debounce
+        searchInput.addEventListener('input', (e) => {
+          const searchTerm = e.target.value.trim();
+          
+          clearTimeout(searchTimeouts[searchInput]);
+          
+          if (searchTerm.length < 2) {
+            searchResults.classList.remove('show');
+            addButton.disabled = true;
+            selectedCard = null;
+            selectedResultIndex = -1;
+            preview.classList.remove('show');
+            // S'assurer que l'image de la miniature est vidée
+            previewImg.src = '';
+            return;
+          }
+          
+          // Si le champ change et qu'une carte était sélectionnée, vérifier si elle est toujours valide
+          if (selectedCard) {
+            // Vérifier si la carte sélectionnée correspond encore au terme de recherche
+            const cardNameMatches = selectedCard.name.toLowerCase().includes(searchTerm.toLowerCase());
+            // Si le terme de recherche ne correspond plus exactement, désélectionner
+            if (!cardNameMatches || searchTerm.length < selectedCard.name.length) {
+              selectedCard = null;
+              addButton.disabled = true;
+              preview.classList.remove('show'); // Cacher la miniature
+            }
+          } else {
+            // S'assurer que la miniature est cachée si aucune carte n'est sélectionnée
+            preview.classList.remove('show');
+          }
+          
+          searchTimeouts[searchInput] = setTimeout(async () => {
+            try {
+              // Utiliser la langue actuelle depuis le scope global (référence directe)
+              const searchLang = currentSearchLanguage || 'en';
+              const apiUrl = `/api/search-cards?fname=${encodeURIComponent(searchTerm)}&language=${encodeURIComponent(searchLang)}`;
+              const response = await fetch(apiUrl);
+              const data = await response.json();
+              if (data.error) {
+                console.error('Erreur API:', data.error);
+              }
+              currentSearchResults = data.data || [];
+              
+              // Filtrer les résultats pour exclure les cartes déjà ajoutées à la liste
+              const addedCardIds = new Set(addedCards.map(c => String(c.id)));
+              currentSearchResults = currentSearchResults.filter(card => !addedCardIds.has(String(card.id)));
+              
+              // Vérifier si la carte précédemment sélectionnée est toujours dans les résultats
+              let previousSelectedCard = selectedCard;
+              selectedCard = null;
+              selectedResultIndex = -1;
+              
+              // Si une carte était sélectionnée, vérifier si elle est toujours dans les résultats
+              if (previousSelectedCard) {
+                const stillInResults = currentSearchResults.find(c => c.id === previousSelectedCard.id);
+                // Si elle est toujours là ET qu'elle est le premier résultat, la garder sélectionnée
+                if (stillInResults && currentSearchResults[0] && currentSearchResults[0].id === previousSelectedCard.id) {
+                  selectedCard = previousSelectedCard;
+                  addButton.disabled = false;
+                } else {
+                  // Sinon, désélectionner
+                  addButton.disabled = true;
+                }
+              }
+              
+              displaySearchResults(searchResults, currentSearchResults, searchInput, preview, previewImg, addButton, (card) => {
+                selectedCard = card;
+              });
+              
+              // Si un seul résultat, le sélectionner automatiquement
+              if (currentSearchResults.length === 1) {
+                selectedCard = currentSearchResults[0];
+                addButton.disabled = false;
+                selectedResultIndex = 0;
+                updateSelectedResult(searchResults);
+                // Prévisualiser automatiquement
+                if (currentSearchResults[0].thumbnailUrl) {
+                  previewImg.src = `/api/card-thumbnail/${currentSearchResults[0].id}`;
+                  preview.classList.add('show');
+                }
+              } else if (currentSearchResults.length > 1) {
+                // Si la carte précédemment sélectionnée n'est plus valide, réinitialiser
+                if (!selectedCard) {
+                  selectedResultIndex = 0;
+                  updateSelectedResult(searchResults);
+                  // Prévisualiser le premier résultat par défaut
+                  if (currentSearchResults[0].thumbnailUrl) {
+                    previewImg.src = `/api/card-thumbnail/${currentSearchResults[0].id}`;
+                    preview.classList.add('show');
+                  }
+                } else {
+                  // Si la carte est toujours sélectionnée, prévisualiser celle-ci
+                  if (selectedCard.thumbnailUrl) {
+                    previewImg.src = `/api/card-thumbnail/${selectedCard.id}`;
+                    preview.classList.add('show');
+                  }
+                }
+              } else {
+                preview.classList.remove('show');
+                addButton.disabled = true;
+              }
+            } catch (error) {
+              console.error('Erreur lors de la recherche:', error);
+            }
+          }, 300);
+        });
+        
+        // Navigation clavier dans les résultats
+        searchInput.addEventListener('keydown', (e) => {
+          // Si Entrée est pressée et qu'une carte est déjà sélectionnée, l'ajouter directement
+          if (e.key === 'Enter' && selectedCard && !searchResults.classList.contains('show')) {
+            e.preventDefault();
+            const quantity = parseInt(quantityInput.value) || 1;
+            addCardToList(selectedCard, quantity);
+            searchInput.value = '';
+            quantityInput.value = 1;
+            addButton.disabled = true;
+            selectedCard = null;
+            selectedResultIndex = -1;
+            preview.classList.remove('show');
+            return;
+          }
+          
+          // Si Entrée est pressée avec des résultats affichés
+          if (e.key === 'Enter' && searchResults.classList.contains('show') && currentSearchResults.length > 0) {
+            e.preventDefault();
+            // Si un résultat est sélectionné, utiliser celui-ci, sinon prendre le premier
+            const indexToSelect = selectedResultIndex >= 0 ? selectedResultIndex : 0;
+            if (currentSearchResults[indexToSelect]) {
+              const selected = selectCard(currentSearchResults[indexToSelect], searchInput, searchResults, addButton, preview, previewImg);
+              selectedCard = selected;
+              // La miniature est déjà masquée par selectCard pour ne pas cacher les contrôles
+            }
+            return;
+          }
+          
+          if (!searchResults.classList.contains('show')) return;
+          
+          if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            selectedResultIndex = Math.min(selectedResultIndex + 1, currentSearchResults.length - 1);
+            updateSelectedResult(searchResults);
+            // Afficher l'aperçu du résultat sélectionné
+            if (selectedResultIndex >= 0 && currentSearchResults[selectedResultIndex]) {
+              const card = currentSearchResults[selectedResultIndex];
+              if (card.thumbnailUrl) {
+                previewImg.src = `/api/card-thumbnail/${card.id}`;
+                preview.classList.add('show');
+              }
+            }
+          } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            selectedResultIndex = Math.max(selectedResultIndex - 1, -1);
+            updateSelectedResult(searchResults);
+            // Afficher l'aperçu du résultat sélectionné
+            if (selectedResultIndex >= 0 && currentSearchResults[selectedResultIndex]) {
+              const card = currentSearchResults[selectedResultIndex];
+              if (card.thumbnailUrl) {
+                previewImg.src = `/api/card-thumbnail/${card.id}`;
+                preview.classList.add('show');
+              }
+            } else {
+              preview.classList.remove('show');
+            }
+          } else if (e.key === 'Escape') {
+            e.preventDefault();
+            searchResults.classList.remove('show');
+            preview.classList.remove('show');
+            selectedResultIndex = -1;
+          }
+        });
+        
+        // Clic en dehors pour fermer les résultats
+        document.addEventListener('click', (e) => {
+          if (!lineDiv.contains(e.target)) {
+            searchResults.classList.remove('show');
+            // Cacher la miniature si aucune carte n'est sélectionnée
+            if (!selectedCard) {
+              preview.classList.remove('show');
+            }
+          }
+        });
+        
+        // Ajouter la carte
+        addButton.addEventListener('click', () => {
+          if (selectedCard) {
+            const quantity = parseInt(quantityInput.value) || 1;
+            addCardToList(selectedCard, quantity);
+            // Réinitialiser cette ligne au lieu d'en créer une nouvelle
+            searchInput.value = '';
+            quantityInput.value = 1;
+            searchResults.classList.remove('show');
+            addButton.disabled = true;
+            selectedCard = null;
+            selectedResultIndex = -1;
+            preview.classList.remove('show');
+            previewImg.src = ''; // Vider l'image de la miniature
+            // Ne pas ajouter de nouvelle ligne - réutiliser celle-ci
+          }
+        });
+      }
+      
+      // Afficher les résultats de recherche
+      function displaySearchResults(container, results, searchInput, preview, previewImg, addButton, setSelectedCardCallback) {
+        container.innerHTML = '';
+        selectedResultIndex = -1;
+        
+        if (results.length === 0) {
+          container.innerHTML = `<div class="builder-search-result">${isFr ? 'Aucun résultat' : 'No results'}</div>`;
+          container.classList.add('show');
+          return;
+        }
+        
+        results.forEach((card, index) => {
+          const resultDiv = document.createElement('div');
+          resultDiv.className = 'builder-search-result';
+          resultDiv.innerHTML = `
+            <div class="builder-search-result-name">${card.name}</div>
+            <div class="builder-search-result-type">${card.type}</div>
+          `;
+          
+          // Aperçu au survol
+          resultDiv.addEventListener('mouseenter', () => {
+            if (card.thumbnailUrl) {
+              previewImg.src = `/api/card-thumbnail/${card.id}`;
+              preview.classList.add('show');
+            }
+          });
+          
+          resultDiv.addEventListener('mouseleave', () => {
+            // Ne cacher la miniature que si aucune carte n'est sélectionnée
+            if (!selectedCard) {
+              preview.classList.remove('show');
+            }
+          });
+          
+          // Sélection au clic
+          resultDiv.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const selected = selectCard(card, searchInput, container, addButton, preview, previewImg);
+            setSelectedCardCallback(selected);
+          });
+          
+          container.appendChild(resultDiv);
+        });
+        
+        container.classList.add('show');
+      }
+      
+      // Mettre à jour la sélection visuelle
+      function updateSelectedResult(container) {
+        const results = container.querySelectorAll('.builder-search-result');
+        results.forEach((r, i) => {
+          r.classList.toggle('selected', i === selectedResultIndex);
+          // Scroll vers le résultat sélectionné si nécessaire
+          if (i === selectedResultIndex) {
+            r.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+          }
+        });
+      }
+      
+      // Sélectionner une carte (retourne la carte sélectionnée)
+      function selectCard(card, searchInput, searchResults, addButton, preview, previewImg) {
+        searchInput.value = card.name;
+        searchResults.classList.remove('show');
+        addButton.disabled = false;
+        // Masquer la miniature après sélection pour ne pas cacher les contrôles
+        preview.classList.remove('show');
+        return card;
+      }
+      
+      // Ajouter une carte à la liste
+      function addCardToList(card, quantity) {
+        // Vérifier si la carte existe déjà
+        const existingIndex = addedCards.findIndex(c => c.id === card.id);
+        
+        if (existingIndex >= 0) {
+          // Augmenter la quantité
+          addedCards[existingIndex].quantity += quantity;
+        } else {
+          // Ajouter la carte
+          addedCards.push({
+            id: card.id,
+            name: card.name,
+            quantity: quantity
+          });
+        }
+        
+        updateBuilderSubmitButton();
+        updateAddedCardsList();
+      }
+      
+      // Mettre à jour le bouton de soumission
+      function updateBuilderSubmitButton() {
+        builderSubmit.disabled = addedCards.length === 0;
+      }
+      
+      // Afficher la liste des cartes ajoutées
+      function updateAddedCardsList() {
+        // Supprimer l'ancienne liste si elle existe
+        const existingList = builderSection.querySelector('.builder-added-cards');
+        if (existingList) {
+          existingList.remove();
+        }
+        
+        if (addedCards.length === 0) return;
+        
+        const listDiv = document.createElement('div');
+        listDiv.className = 'builder-added-cards';
+        listDiv.innerHTML = `<h4>${isFr ? 'Cartes ajoutées' : 'Added cards'} (${addedCards.reduce((sum, c) => sum + c.quantity, 0)} ${isFr ? 'cartes' : 'cards'})</h4>`;
+        
+        addedCards.forEach((card, index) => {
+          const cardDiv = document.createElement('div');
+          cardDiv.className = 'builder-added-card';
+          cardDiv.innerHTML = `
+            <div class="builder-added-card-thumbnail">
+              <img src="/api/card-thumbnail/${card.id}" alt="${card.name}" onerror="this.style.display='none'">
+            </div>
+            <div class="builder-added-card-info">
+              <div class="builder-added-card-name">${card.name}</div>
+              <div class="builder-added-card-quantity">${isFr ? 'Quantité' : 'Quantity'}: ${card.quantity}</div>
+            </div>
+            <div class="builder-added-card-actions">
+              <input type="number" class="builder-edit-quantity" min="1" value="${card.quantity}" data-index="${index}">
+              <div class="builder-remove-icon" data-index="${index}" title="${isFr ? 'Supprimer' : 'Remove'}">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M3 6H5H21M8 6V4C8 3.46957 8.21071 2.96086 8.58579 2.58579C8.96086 2.21071 9.46957 2 10 2H14C14.5304 2 15.0391 2.21071 15.4142 2.58579C15.7893 2.96086 16 3.46957 16 4V6M19 6V20C19 20.5304 18.7893 21.0391 18.4142 21.4142C18.0391 21.7893 17.5304 22 17 22H7C6.46957 22 5.96086 21.7893 5.58579 21.4142C5.21071 21.0391 5 20.5304 5 20V6H19Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                  <path d="M10 11V17M14 11V17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                </svg>
+              </div>
+            </div>
+          `;
+          
+          // Modifier la quantité
+          const quantityInput = cardDiv.querySelector('.builder-edit-quantity');
+          quantityInput.addEventListener('change', (e) => {
+            const newQuantity = parseInt(e.target.value) || 1;
+            if (newQuantity > 0) {
+              addedCards[index].quantity = newQuantity;
+              updateBuilderSubmitButton();
+              updateAddedCardsList();
+            }
+          });
+          
+          // Supprimer la carte
+          const removeIcon = cardDiv.querySelector('.builder-remove-icon');
+          removeIcon.addEventListener('click', () => {
+            addedCards.splice(index, 1);
+            updateBuilderSubmitButton();
+            updateAddedCardsList();
+          });
+          
+          listDiv.appendChild(cardDiv);
+        });
+        
+        builderSection.insertBefore(listDiv, builderSection.querySelector('.builder-actions'));
+      }
+      
+      // Soumettre la liste
+      builderSubmit.addEventListener('click', async () => {
+        if (addedCards.length === 0) return;
+        
+        // Désactiver le bouton pendant le traitement
+        builderSubmit.disabled = true;
+        builderSubmit.textContent = isFr ? 'Génération en cours...' : 'Generating...';
+        
+        try {
+          // Préparer les données
+          const cardsData = addedCards.map(card => ({
+            id: card.id,
+            quantity: card.quantity
+          }));
+          
+          // Soumettre au serveur
+          const response = await fetch('/upload-decklist', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ cards: cardsData })
+          });
+          
+          if (response.ok) {
+            // Le serveur renvoie une page HTML, on peut la charger directement
+            // Utiliser document.write() qui exécute les scripts inline
+            const html = await response.text();
+            document.open();
+            document.write(html);
+            document.close();
+            
+          } else {
+            throw new Error('Erreur lors de la génération');
+          }
+        } catch (error) {
+          console.error('Erreur:', error);
+          alert(isFr ? 'Erreur lors de la génération du PDF' : 'Error generating PDF');
+          builderSubmit.disabled = false;
+          builderSubmit.textContent = isFr ? 'Proxyfier ma liste' : 'Proxify my list';
+        }
+      });
     </script>
   </body>
 </html>

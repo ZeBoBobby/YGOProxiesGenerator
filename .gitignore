@@ -10,6 +10,8 @@ upload_ydk/*
 !upload_ydk/.gitkeep
 pdf/*
 !pdf/.gitkeep
+cache/*
+!cache/.gitkeep
 deck.json
 form.html
 output.pdf

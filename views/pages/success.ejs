@@ -3,7 +3,7 @@
   <head>
     <% 
       const pageTitle = success ? (lang.includes('fr') ? 'PDF généré avec succès - YGOProxy.com' : 'PDF generated successfully - YGOProxy.com') : (lang.includes('fr') ? 'Erreur - YGOProxy.com' : 'Error - YGOProxy.com');
-      const pageDescription = lang.includes('fr') ? 'Téléchargez votre PDF de proxies Yu-Gi-Oh! généré' : 'Download your generated Yu-Gi-Oh! proxy PDF';
+      const pageDescription = lang.includes('fr') ? 'Télécharge ton PDF de proxies Yu-Gi-Oh! généré' : 'Download your generated Yu-Gi-Oh! proxy PDF';
     %>
     <%- include('../partials/head', { title: pageTitle, description: pageDescription, canonical: 'https://ygoproxy.com' }); %> 
     <style>
@@ -177,7 +177,7 @@
           </div>
           <h1><%= lang.includes('fr') ? 'Bien joué !' : 'Well done!' %></h1>
           <p><%= lang.includes('fr') ? 'Tout semble avoir fonctionné ! Il ne te reste plus qu\'à télécharger et imprimer ton' : 'Everything went well! All you have to do now is download and print your' %> <a href="<%= filename %>"><%= lang.includes('fr') ? 'PDF de proxies.' : 'proxies PDF file.' %></a></p>
-          <p style="color: var(--text-secondary); font-size: 0.9rem;"><%= lang.includes('fr') ? 'Par défaut, tes PDFs sont conservés 6 mois et sont retrouvables si tu utilises le même navigateur. Tu peux aussi les retrouver sur la page d\'accueil dans la section "Vos proxies précédents".' : 'By default, your PDFs are kept for 6 months and can be retrieved if you use the same browser. You can also find them on the home page in the "Your previous proxies" section.' %></p>
+          <p style="color: var(--text-secondary); font-size: 0.9rem;"><%= lang.includes('fr') ? 'Par défaut, tes PDFs sont conservés 6 mois et sont retrouvables si tu utilises le même navigateur. Tu peux aussi les retrouver sur la page d\'accueil dans la section "Tes proxy de l\'époque du pharaon".' : 'By default, your PDFs are kept for 6 months and can be retrieved if you use the same browser. You can also find them on the home page in the "Your previous proxies" section.' %></p>
           <div style="margin: 1.5rem 0;">
             <a href="<%= filename %>" target="_blank" rel="noopener noreferrer" class="pdf-link"><%= filename %></a>
           </div>
@@ -211,7 +211,7 @@
           </div>
 
           <div class="content-box history-section" id="historySection" style="display: none;">
-            <h3><%= lang.includes('fr') ? 'Vos proxies précédents' : 'Your previous proxies' %></h3>
+            <h3><%= lang.includes('fr') ? 'Tes proxy de l\'époque du pharaon' : 'Your previous proxies' %></h3>
             <ul class="history-list" id="historyList">
               <li class="history-empty"><%= lang.includes('fr') ? 'Chargement...' : 'Loading...' %></li>
             </ul>
@@ -244,33 +244,44 @@
       const STORAGE_KEY = 'ygoproxy_history';
       const isFr = '<%= lang.includes("fr") %>' === 'true';
       
-      const dontRemember = localStorage.getItem(DONT_REMEMBER_KEY) === 'true';
-      
-      if (!dontRemember) {
-        // Récupérer l'historique existant
-        const history = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+      // S'assurer que le script s'exécute même si la page est chargée via document.write
+      (function() {
+        const dontRemember = localStorage.getItem(DONT_REMEMBER_KEY) === 'true';
         
-        // Vérifier si ce PDF n'est pas déjà dans l'historique
-        const exists = history.some(item => item.filename === '<%= filename %>');
-        
-        if (!exists) {
-          // Ajouter le nouveau PDF avec la date actuelle
-          history.push({
-            filename: '<%= filename %>',
-            date: new Date().toISOString()
-          });
+        if (!dontRemember) {
+          // Récupérer l'historique existant
+          const history = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
           
-          // Limiter à 50 PDFs maximum pour éviter de surcharger le localStorage
-          if (history.length > 50) {
-            // Garder les 50 plus récents
-            history.sort((a, b) => new Date(b.date) - new Date(a.date));
-            history.splice(50);
+          // Utiliser une variable pour éviter les problèmes d'interpolation
+          const newFilename = '<%= filename %>';
+          
+          // Vérifier si ce PDF n'est pas déjà dans l'historique
+          const exists = history.some(item => item.filename === newFilename);
+          
+          if (!exists) {
+            // Ajouter le nouveau PDF avec la date actuelle
+            history.push({
+              filename: newFilename,
+              date: new Date().toISOString()
+            });
+            
+            // Limiter à 50 PDFs maximum pour éviter de surcharger le localStorage
+            if (history.length > 50) {
+              // Garder les 50 plus récents
+              history.sort((a, b) => new Date(b.date) - new Date(a.date));
+              history.splice(50);
+            }
+            
+            // Sauvegarder dans localStorage
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+            console.log('PDF ajouté à l\'historique:', newFilename);
+          } else {
+            console.log('PDF déjà dans l\'historique:', newFilename);
           }
-          
-          // Sauvegarder dans localStorage
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+        } else {
+          console.log('Historique désactivé par l\'utilisateur');
         }
-      }
+      })();
 
       // Fonction pour formater la date
       function formatDate(dateString) {

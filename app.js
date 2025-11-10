@@ -13,6 +13,8 @@ const favicon = require('serve-favicon');
 const pdfFolder = path.join(__dirname, 'pdf');
 const uploadFolder = path.join(__dirname, 'upload_ydk');
 const imagesFolder = path.join(__dirname, 'images');
+const thumbnailsFolder = path.join(__dirname, 'thumbnails');
+const cacheFolder = path.join(__dirname, 'cache');
 
 const port = 8080;
 
@@ -42,6 +44,7 @@ app.disable('etag');
 
 app.use(express.static('pdf'));
 app.use(express.static('images'));
+app.use('/thumbnails', express.static('thumbnails'));
 
 app.set('view engine', 'ejs');
 
@@ -79,8 +82,8 @@ const generateUniqueFilename = (originalFilename) => {
 
 app.post('/upload-decklist', async (req, res) => {
   try {
-    if (!req.files && !req.body.ydkeCode) {
-      throw new Error('No uploaded file or YDKE code provided.');
+    if (!req.files && !req.body.ydkeCode && !req.body.cards) {
+      throw new Error('No uploaded file, YDKE code, or card list provided.');
     }
 
     let decklist;
@@ -107,6 +110,35 @@ app.post('/upload-decklist', async (req, res) => {
 
       filename = generateUniqueFilename('ydke_deck.pdf');
       downloadResult = await downloadImages(decklist);
+    } else if (req.body.cards) {
+      // Accepter soit un tableau directement, soit une chaîne JSON
+      let cardsArray = req.body.cards;
+      if (typeof cardsArray === 'string') {
+        try {
+          cardsArray = JSON.parse(cardsArray);
+        } catch (e) {
+          throw new Error('Invalid cards format');
+        }
+      }
+      
+      if (Array.isArray(cardsArray)) {
+        // Nouvelle méthode : liste de cartes avec quantités
+        // Format attendu : [{ id: 123456, quantity: 3 }, { id: 789012, quantity: 1 }]
+        decklist = [];
+        cardsArray.forEach(card => {
+          const cardId = String(card.id);
+          const quantity = parseInt(card.quantity) || 1;
+          // Ajouter la carte autant de fois que la quantité
+          for (let i = 0; i < quantity; i++) {
+            decklist.push(cardId);
+          }
+        });
+
+        filename = generateUniqueFilename('ygoproxy_builder.pdf');
+        downloadResult = await downloadImages(decklist);
+      } else {
+        throw new Error('Invalid cards format: must be an array');
+      }
     }
 
     // Vérifier s'il y a des erreurs
@@ -364,6 +396,298 @@ app.post('/api/check-pdfs', (req, res) => {
   });
   
   res.json({ results });
+});
+
+// Fonction pour créer un hash simple d'une chaîne
+const createHash = (str) => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  return Math.abs(hash).toString(36);
+};
+
+// Fonction pour obtenir le chemin du cache
+const getCachePath = (searchTerm, language) => {
+  const cacheKey = `${searchTerm.toLowerCase().trim()}_${language}`;
+  const hash = createHash(cacheKey);
+  return path.join(cacheFolder, `${hash}.json`);
+};
+
+// Fonction pour lire le cache
+const readCache = (cachePath) => {
+  try {
+    if (fs.existsSync(cachePath)) {
+      const data = fs.readFileSync(cachePath, 'utf8');
+      const cached = JSON.parse(data);
+      // Vérifier que le cache n'est pas trop vieux (7 jours)
+      const cacheAge = Date.now() - cached.timestamp;
+      const maxAge = 7 * 24 * 60 * 60 * 1000; // 7 jours
+      if (cacheAge < maxAge) {
+        return cached.data;
+      }
+      // Cache expiré, supprimer le fichier
+      fs.unlinkSync(cachePath);
+    }
+  } catch (error) {
+    console.error('Erreur lors de la lecture du cache:', error);
+  }
+  return null;
+};
+
+// Fonction pour écrire dans le cache
+const writeCache = (cachePath, data) => {
+  try {
+    if (!fs.existsSync(cacheFolder)) {
+      fs.mkdirSync(cacheFolder, { recursive: true });
+    }
+    
+    const cacheData = {
+      timestamp: Date.now(),
+      data: data
+    };
+    
+    fs.writeFileSync(cachePath, JSON.stringify(cacheData), 'utf8');
+    
+    // Nettoyer le cache si trop de fichiers (garder les 1000 plus récents)
+    cleanupCache();
+  } catch (error) {
+    console.error('Erreur lors de l\'écriture du cache:', error);
+  }
+};
+
+// Fonction pour nettoyer le cache (garder les 1000 plus récents)
+const cleanupCache = () => {
+  try {
+    if (!fs.existsSync(cacheFolder)) return;
+    
+    const files = fs.readdirSync(cacheFolder)
+      .filter(f => f.endsWith('.json'))
+      .map(f => {
+        const filePath = path.join(cacheFolder, f);
+        const stats = fs.statSync(filePath);
+        return { name: f, path: filePath, mtime: stats.mtime.getTime() };
+      })
+      .sort((a, b) => b.mtime - a.mtime); // Plus récent en premier
+    
+    // Supprimer les fichiers au-delà de 1000
+    if (files.length > 1000) {
+      files.slice(1000).forEach(file => {
+        try {
+          fs.unlinkSync(file.path);
+        } catch (error) {
+          console.error('Erreur lors de la suppression du cache:', error);
+        }
+      });
+    }
+  } catch (error) {
+    console.error('Erreur lors du nettoyage du cache:', error);
+  }
+};
+
+// Endpoint pour rechercher des cartes par nom
+app.get('/api/search-cards', async (req, res) => {
+  try {
+    const searchTerm = req.query.name || req.query.fname || '';
+    const language = req.query.language || 'en'; // Par défaut en anglais
+    
+    if (!searchTerm || searchTerm.length < 2) {
+      return res.json({ data: [] });
+    }
+
+    // Vérifier le cache d'abord
+    const cachePath = getCachePath(searchTerm, language);
+    const cachedData = readCache(cachePath);
+    if (cachedData) {
+      return res.json({ data: cachedData });
+    }
+
+    // Utiliser fname pour une recherche partielle (fuzzy search)
+    // L'API YGOPRODeck supporte le paramètre language (en, fr, de, es, it, pt, ja, ko, zh)
+    // Note: l'anglais est la langue par défaut, donc on n'ajoute le paramètre que pour les autres langues
+    let apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?fname=${encodeURIComponent(searchTerm)}`;
+    
+    // Ajouter le paramètre de langue si ce n'est pas l'anglais (langue par défaut de l'API)
+    if (language && language !== 'en') {
+      apiUrl += `&language=${encodeURIComponent(language)}`;
+    }
+    
+    let response;
+    try {
+      response = await axios({
+        url: apiUrl,
+        method: 'GET',
+        timeout: 10000,
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+    } catch (axiosError) {
+      console.error('Erreur axios:', axiosError.message);
+      if (axiosError.response) {
+        console.error('Status:', axiosError.response.status);
+        console.error('Data:', JSON.stringify(axiosError.response.data).substring(0, 500));
+      }
+      if (axiosError.code) {
+        console.error('Code erreur:', axiosError.code);
+      }
+      throw axiosError;
+    }
+    
+    // Vérifier que la réponse est valide
+    if (!response || !response.data) {
+      console.error('Réponse API invalide ou vide');
+      throw new Error('Réponse API vide');
+    }
+    
+    // L'API peut retourner un objet avec data: [] si aucun résultat
+    // Mais parfois data peut être null ou undefined
+    if (response.data.data === null || response.data.data === undefined) {
+      response.data.data = [];
+    } else if (!Array.isArray(response.data.data)) {
+      console.error('Format de réponse inattendu:', typeof response.data.data);
+      // Si ce n'est pas un tableau, retourner un tableau vide
+      response.data.data = [];
+    }
+
+    // Limiter à 15 résultats maximum
+    let cards = [];
+    try {
+      const rawCards = response.data.data || [];
+      cards = rawCards.slice(0, 15).map(card => {
+        try {
+          // S'assurer que toutes les propriétés existent
+          if (!card || !card.id) {
+            console.warn('Carte invalide dans les résultats:', JSON.stringify(card).substring(0, 100));
+            return null;
+          }
+          return {
+            id: String(card.id), // S'assurer que c'est une string
+            name: String(card.name || ''),
+            type: String(card.type || ''),
+            desc: String(card.desc || ''),
+            race: String(card.race || ''),
+            archetype: card.archetype ? String(card.archetype) : null,
+            imageUrl: card.card_images && card.card_images[0]
+              ? `https://images.ygoprodeck.com/images/cards/${card.id}.jpg`
+              : null,
+            thumbnailUrl: card.card_images && card.card_images[0]
+              ? `https://images.ygoprodeck.com/images/cards_small/${card.id}.jpg`
+              : null,
+          };
+        } catch (cardError) {
+          console.error('Erreur lors du traitement d\'une carte:', cardError.message, JSON.stringify(card).substring(0, 100));
+          return null;
+        }
+      }).filter(card => card !== null); // Filtrer les cartes invalides
+    } catch (mapError) {
+      console.error('Erreur lors du mapping des cartes:', mapError.message);
+      console.error('Stack:', mapError.stack);
+      cards = [];
+    }
+
+    // Mettre en cache les résultats
+    try {
+      writeCache(cachePath, cards);
+    } catch (cacheError) {
+      console.warn('Erreur lors de l\'écriture du cache:', cacheError.message);
+      // Continuer même si le cache échoue
+    }
+
+    res.json({ data: cards });
+  } catch (error) {
+    console.error('Erreur lors de la recherche de cartes:', error.message || error);
+    console.error('Stack:', error.stack);
+    if (error.response) {
+      console.error('Status:', error.response.status);
+      console.error('Data:', JSON.stringify(error.response.data).substring(0, 500));
+    }
+    if (error.request) {
+      console.error('Pas de réponse de l\'API');
+    }
+    
+    // En cas d'erreur, essayer de retourner le cache même s'il est expiré
+    try {
+      const searchTerm = req.query.name || req.query.fname || '';
+      const language = req.query.language || 'en';
+      const cachePath = getCachePath(searchTerm, language);
+      if (fs.existsSync(cachePath)) {
+        const data = fs.readFileSync(cachePath, 'utf8');
+        const cached = JSON.parse(data);
+        return res.json({ data: cached.data });
+      }
+    } catch (cacheError) {
+      console.error('Erreur lors de la lecture du cache:', cacheError.message);
+    }
+    
+    res.status(500).json({ error: 'Erreur lors de la recherche de cartes' });
+  }
+});
+
+// Fonction pour télécharger une miniature
+const downloadThumbnail = async (cardId) => {
+  const url = `https://images.ygoprodeck.com/images/cards_small/${cardId}.jpg`;
+  const thumbnailPath = path.join(thumbnailsFolder, `${cardId}.jpg`);
+  
+  // Créer le dossier s'il n'existe pas
+  if (!fs.existsSync(thumbnailsFolder)) {
+    fs.mkdirSync(thumbnailsFolder, { recursive: true });
+  }
+  
+  try {
+    const response = await axios({
+      url,
+      method: 'GET',
+      responseType: 'stream',
+      validateStatus: (status) => status === 200,
+      timeout: 10000,
+    });
+
+    const writer = fs.createWriteStream(thumbnailPath);
+    response.data.pipe(writer);
+
+    return new Promise((resolve, reject) => {
+      writer.on('finish', resolve);
+      writer.on('error', (err) => {
+        if (fs.existsSync(thumbnailPath)) {
+          fs.unlink(thumbnailPath, () => {});
+        }
+        reject(err);
+      });
+    });
+  } catch (error) {
+    if (fs.existsSync(thumbnailPath)) {
+      fs.unlinkSync(thumbnailPath);
+    }
+    throw error;
+  }
+};
+
+// Endpoint pour servir les miniatures (avec cache)
+app.get('/api/card-thumbnail/:id', async (req, res) => {
+  try {
+    const cardId = req.params.id;
+    const thumbnailPath = path.join(thumbnailsFolder, `${cardId}.jpg`);
+    
+    // Si la miniature existe déjà, la servir
+    if (fs.existsSync(thumbnailPath)) {
+      return res.sendFile(path.resolve(thumbnailPath));
+    }
+    
+    // Sinon, la télécharger puis la servir
+    try {
+      await downloadThumbnail(cardId);
+      res.sendFile(path.resolve(thumbnailPath));
+    } catch (error) {
+      // Si le téléchargement échoue, retourner une erreur 404
+      res.status(404).json({ error: 'Miniature non disponible' });
+    }
+  } catch (error) {
+    console.error('Erreur lors de la récupération de la miniature:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
 });
 
 app.use(function (req, res, next) {
