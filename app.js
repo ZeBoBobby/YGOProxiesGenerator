@@ -115,7 +115,12 @@ app.post('/upload-decklist', async (req, res) => {
 
     // Vérifier qu'il y a au moins une carte valide
     if (validCardIds.length === 0) {
-      throw new Error('Aucune carte valide n\'a pu être téléchargée. Vérifiez les IDs de cartes dans votre decklist.');
+      const lang = req.acceptsLanguages()[0];
+      const isFr = lang.includes('fr');
+      const errorMsg = isFr 
+        ? 'Aucune carte valide n\'a pu être téléchargée. Vérifiez les IDs de cartes dans votre decklist.'
+        : 'No valid card could be downloaded. Check the card IDs in your decklist.';
+      throw new Error(errorMsg);
     }
 
     // Générer le PDF uniquement avec les cartes valides
@@ -332,6 +337,34 @@ app.get('/credits', (req, res) => {
     lang: req.acceptsLanguages()[0]
   });
 })
+
+// Endpoint pour vérifier si un PDF existe encore sur le serveur
+app.get('/api/check-pdf/:filename', (req, res) => {
+  const filename = req.params.filename;
+  // Sécuriser le nom de fichier pour éviter les path traversal
+  const safeFilename = path.basename(filename);
+  const filePath = path.join(pdfFolder, safeFilename);
+  
+  if (fs.existsSync(filePath)) {
+    res.json({ exists: true });
+  } else {
+    res.json({ exists: false });
+  }
+});
+
+// Endpoint pour vérifier plusieurs PDFs en une seule requête
+app.post('/api/check-pdfs', (req, res) => {
+  const filenames = req.body.filenames || [];
+  const results = {};
+  
+  filenames.forEach(filename => {
+    const safeFilename = path.basename(filename);
+    const filePath = path.join(pdfFolder, safeFilename);
+    results[filename] = fs.existsSync(filePath);
+  });
+  
+  res.json({ results });
+});
 
 app.use(function (req, res, next) {
   res.status(404);

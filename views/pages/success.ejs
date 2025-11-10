@@ -62,6 +62,105 @@
         color: var(--text-secondary);
         margin-bottom: 1rem;
       }
+
+      .history-section {
+        margin-top: 2rem;
+        padding: 1rem;
+        background: var(--bg);
+        border-radius: 8px;
+        border: 2px solid var(--border);
+        text-align: left;
+      }
+
+      .history-section h3 {
+        margin: 0 0 1rem 0;
+        font-size: 1rem;
+        color: var(--text);
+        text-align: center;
+      }
+
+      .history-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .history-item {
+        padding: 0.75rem;
+        margin-bottom: 0.5rem;
+        background: var(--bg);
+        border-radius: 6px;
+        border: 1px solid var(--border);
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+      }
+
+      .history-item:hover {
+        background: rgba(74, 144, 226, 0.05);
+        border-color: var(--accent-blue);
+      }
+
+      .history-item-content {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .history-item a {
+        color: var(--accent-blue);
+        text-decoration: none;
+        font-weight: 500;
+        flex: 1;
+      }
+
+      .history-item a:hover {
+        text-decoration: underline;
+      }
+
+      .history-item .date {
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+      }
+
+      .history-item-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .history-item-icon {
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+        color: var(--text-secondary);
+        transition: all 0.2s ease;
+        flex-shrink: 0;
+      }
+
+      .history-item-icon:hover {
+        color: var(--accent-blue);
+        transform: scale(1.1);
+      }
+
+      .history-item-icon.delete:hover {
+        color: #ff6b6b;
+      }
+
+      .history-item-icon svg {
+        width: 100%;
+        height: 100%;
+      }
+
+      .history-empty {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        text-align: center;
+        padding: 1rem;
+      }
     </style>
   </head>
   <body>
@@ -78,7 +177,7 @@
           </div>
           <h1><%= lang.includes('fr') ? 'Bien joué !' : 'Well done!' %></h1>
           <p><%= lang.includes('fr') ? 'Tout semble avoir fonctionné ! Il ne te reste plus qu\'à télécharger et imprimer ton' : 'Everything went well! All you have to do now is download and print your' %> <a href="<%= filename %>"><%= lang.includes('fr') ? 'PDF de proxies.' : 'proxies PDF file.' %></a></p>
-          <p style="color: var(--text-secondary); font-size: 0.9rem;"><%= lang.includes('fr') ? 'Attention, ce lien expirera au bout de quelques heures, aussi pense à l\'enregistrer !' : 'Be careful, the link will expire in a few hours and you will have to start the procedure again if you have not saved your file!' %></p>
+          <p style="color: var(--text-secondary); font-size: 0.9rem;"><%= lang.includes('fr') ? 'Par défaut, tes PDFs sont conservés 6 mois et sont retrouvables si tu utilises le même navigateur. Tu peux aussi les retrouver sur la page d\'accueil dans la section "Vos proxies précédents".' : 'By default, your PDFs are kept for 6 months and can be retrieved if you use the same browser. You can also find them on the home page in the "Your previous proxies" section.' %></p>
           <div style="margin: 1.5rem 0;">
             <a href="<%= filename %>" target="_blank" rel="noopener noreferrer" class="pdf-link"><%= filename %></a>
           </div>
@@ -110,6 +209,13 @@
               <img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=BoBobby&button_colour=FFDD00&font_colour=000000&font_family=Poppins&outline_colour=000000&coffee_colour=ffffff" alt="Buy me a coffee">
             </a>
           </div>
+
+          <div class="content-box history-section" id="historySection" style="display: none;">
+            <h3><%= lang.includes('fr') ? 'Vos proxies précédents' : 'Your previous proxies' %></h3>
+            <ul class="history-list" id="historyList">
+              <li class="history-empty"><%= lang.includes('fr') ? 'Chargement...' : 'Loading...' %></li>
+            </ul>
+          </div>
         <% } else { %>
           <div class="error-icon">
             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -130,6 +236,209 @@
     </div>
 
     <%- include('../partials/footer'); %> 
+
+    <% if (success && filename) { %>
+    <script>
+      // Stocker le PDF dans localStorage si l'utilisateur n'a pas coché la case
+      const DONT_REMEMBER_KEY = 'ygoproxy_dont_remember';
+      const STORAGE_KEY = 'ygoproxy_history';
+      const isFr = '<%= lang.includes("fr") %>' === 'true';
+      
+      const dontRemember = localStorage.getItem(DONT_REMEMBER_KEY) === 'true';
+      
+      if (!dontRemember) {
+        // Récupérer l'historique existant
+        const history = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        
+        // Vérifier si ce PDF n'est pas déjà dans l'historique
+        const exists = history.some(item => item.filename === '<%= filename %>');
+        
+        if (!exists) {
+          // Ajouter le nouveau PDF avec la date actuelle
+          history.push({
+            filename: '<%= filename %>',
+            date: new Date().toISOString()
+          });
+          
+          // Limiter à 50 PDFs maximum pour éviter de surcharger le localStorage
+          if (history.length > 50) {
+            // Garder les 50 plus récents
+            history.sort((a, b) => new Date(b.date) - new Date(a.date));
+            history.splice(50);
+          }
+          
+          // Sauvegarder dans localStorage
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+        }
+      }
+
+      // Fonction pour formater la date
+      function formatDate(dateString) {
+        const date = new Date(dateString);
+        if (isFr) {
+          const day = String(date.getDate()).padStart(2, '0');
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const year = date.getFullYear();
+          return `${day}-${month}-${year}`;
+        } else {
+          const day = String(date.getDate()).padStart(2, '0');
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const year = date.getFullYear();
+          return `${month}-${day}-${year}`;
+        }
+      }
+
+      // Charger et afficher l'historique
+      const historySection = document.getElementById('historySection');
+      const historyList = document.getElementById('historyList');
+
+      async function loadHistory() {
+        // Vérifier si l'utilisateur ne veut pas se souvenir
+        if (localStorage.getItem(DONT_REMEMBER_KEY) === 'true') {
+          historySection.style.display = 'none';
+          return;
+        }
+
+        const history = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        
+        if (history.length === 0) {
+          historySection.style.display = 'none';
+          return;
+        }
+
+        // Trier par date (plus récent en premier)
+        history.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        // Vérifier quels PDFs existent encore
+        const filenames = history.map(item => item.filename);
+        
+        try {
+          const response = await fetch('/api/check-pdfs', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ filenames })
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const data = await response.json();
+          const results = data.results || {};
+
+          // Filtrer uniquement les PDFs qui existent encore
+          const availableHistory = history.filter(item => results[item.filename] === true);
+
+          if (availableHistory.length === 0) {
+            historySection.style.display = 'none';
+            return;
+          }
+
+          // Mettre à jour le localStorage avec seulement les PDFs disponibles
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(availableHistory));
+
+          // Afficher l'historique
+          displayHistory(availableHistory);
+          historySection.style.display = 'block';
+        } catch (error) {
+          // En cas d'erreur, afficher quand même l'historique sans vérification
+          displayHistory(history);
+          historySection.style.display = 'block';
+        }
+      }
+
+      // Fonction pour afficher l'historique
+      function displayHistory(historyItems) {
+        historyList.innerHTML = '';
+        historyItems.forEach(item => {
+          const li = document.createElement('li');
+          li.className = 'history-item';
+          
+          // Contenu principal (lien + date)
+          const contentDiv = document.createElement('div');
+          contentDiv.className = 'history-item-content';
+          
+          const link = document.createElement('a');
+          link.href = item.filename;
+          link.target = '_blank';
+          link.rel = 'noopener noreferrer';
+          link.textContent = item.filename;
+          
+          const dateSpan = document.createElement('span');
+          dateSpan.className = 'date';
+          dateSpan.textContent = `(${formatDate(item.date)})`;
+          
+          contentDiv.appendChild(link);
+          contentDiv.appendChild(dateSpan);
+          
+          // Actions (icônes)
+          const actionsDiv = document.createElement('div');
+          actionsDiv.className = 'history-item-actions';
+          
+          // Icône copier
+          const copyIcon = document.createElement('div');
+          copyIcon.className = 'history-item-icon copy';
+          copyIcon.title = isFr ? 'Copier l\'URL' : 'Copy URL';
+          copyIcon.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+              <path d="M5 15H4C2.89543 15 2 14.1046 2 13V4C2 2.89543 2.89543 2 4 2H13C14.1046 2 15 2.89543 15 4V5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            </svg>
+          `;
+          copyIcon.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const url = window.location.origin + '/' + item.filename;
+            navigator.clipboard.writeText(url).then(() => {
+              // Feedback visuel temporaire
+              const originalTitle = copyIcon.title;
+              copyIcon.title = isFr ? 'Copié !' : 'Copied!';
+              copyIcon.style.color = 'var(--accent-blue)';
+              setTimeout(() => {
+                copyIcon.title = originalTitle;
+                copyIcon.style.color = '';
+              }, 1000);
+            });
+          });
+          
+          // Icône supprimer
+          const deleteIcon = document.createElement('div');
+          deleteIcon.className = 'history-item-icon delete';
+          deleteIcon.title = isFr ? 'Supprimer de l\'historique' : 'Remove from history';
+          deleteIcon.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M3 6H5H21M8 6V4C8 3.46957 8.21071 2.96086 8.58579 2.58579C8.96086 2.21071 9.46957 2 10 2H14C14.5304 2 15.0391 2.21071 15.4142 2.58579C15.7893 2.96086 16 3.46957 16 4V6M19 6V20C19 20.5304 18.7893 21.0391 18.4142 21.4142C18.0391 21.7893 17.5304 22 17 22H7C6.46957 22 5.96086 21.7893 5.58579 21.4142C5.21071 21.0391 5 20.5304 5 20V6H19Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+              <path d="M10 11V17M14 11V17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            </svg>
+          `;
+          deleteIcon.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            // Supprimer de l'historique
+            const history = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+            const updatedHistory = history.filter(h => h.filename !== item.filename);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedHistory));
+            // Recharger l'historique
+            loadHistory();
+          });
+          
+          actionsDiv.appendChild(copyIcon);
+          actionsDiv.appendChild(deleteIcon);
+          
+          li.appendChild(contentDiv);
+          li.appendChild(actionsDiv);
+          historyList.appendChild(li);
+        });
+      }
+
+      // Charger l'historique après avoir sauvegardé le nouveau PDF
+      setTimeout(() => {
+        loadHistory();
+      }, 100);
+    </script>
+    <% } %>
   </body>
 </html>
 
