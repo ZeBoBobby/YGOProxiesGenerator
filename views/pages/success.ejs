@@ -245,43 +245,59 @@
       const isFr = '<%= lang.includes("fr") %>' === 'true';
       
       // S'assurer que le script s'exécute même si la page est chargée via document.write
-      (function() {
-        const dontRemember = localStorage.getItem(DONT_REMEMBER_KEY) === 'true';
-        
-        if (!dontRemember) {
-          // Récupérer l'historique existant
-          const history = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+      // Utiliser plusieurs méthodes pour garantir l'exécution
+      function addToHistory() {
+        try {
+          const dontRemember = localStorage.getItem(DONT_REMEMBER_KEY) === 'true';
           
-          // Utiliser une variable pour éviter les problèmes d'interpolation
-          const newFilename = '<%= filename %>';
-          
-          // Vérifier si ce PDF n'est pas déjà dans l'historique
-          const exists = history.some(item => item.filename === newFilename);
-          
-          if (!exists) {
-            // Ajouter le nouveau PDF avec la date actuelle
-            history.push({
-              filename: newFilename,
-              date: new Date().toISOString()
-            });
+          if (!dontRemember) {
+            // Récupérer l'historique existant
+            const history = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
             
-            // Limiter à 50 PDFs maximum pour éviter de surcharger le localStorage
-            if (history.length > 50) {
-              // Garder les 50 plus récents
-              history.sort((a, b) => new Date(b.date) - new Date(a.date));
-              history.splice(50);
+            // Utiliser une variable pour éviter les problèmes d'interpolation
+            const newFilename = '<%= filename %>';
+            
+            // Vérifier si ce PDF n'est pas déjà dans l'historique
+            const exists = history.some(item => item.filename === newFilename);
+            
+            if (!exists) {
+              // Ajouter le nouveau PDF avec la date actuelle
+              history.push({
+                filename: newFilename,
+                date: new Date().toISOString()
+              });
+              
+              // Limiter à 50 PDFs maximum pour éviter de surcharger le localStorage
+              if (history.length > 50) {
+                // Garder les 50 plus récents
+                history.sort((a, b) => new Date(b.date) - new Date(a.date));
+                history.splice(50);
+              }
+              
+              // Sauvegarder dans localStorage
+              localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+              console.log('PDF ajouté à l\'historique:', newFilename);
+            } else {
+              console.log('PDF déjà dans l\'historique:', newFilename);
             }
-            
-            // Sauvegarder dans localStorage
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
-            console.log('PDF ajouté à l\'historique:', newFilename);
           } else {
-            console.log('PDF déjà dans l\'historique:', newFilename);
+            console.log('Historique désactivé par l\'utilisateur');
           }
-        } else {
-          console.log('Historique désactivé par l\'utilisateur');
+        } catch (error) {
+          console.error('Erreur lors de l\'ajout à l\'historique:', error);
         }
-      })();
+      }
+      
+      // Exécuter immédiatement
+      addToHistory();
+      
+      // Exécuter aussi après le chargement du DOM (au cas où)
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', addToHistory);
+      } else {
+        // DOM déjà chargé, exécuter après un court délai
+        setTimeout(addToHistory, 50);
+      }
 
       // Fonction pour formater la date
       function formatDate(dateString) {

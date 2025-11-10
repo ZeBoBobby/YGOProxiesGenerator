@@ -1343,6 +1343,8 @@
               
               displaySearchResults(searchResults, currentSearchResults, searchInput, preview, previewImg, addButton, (card) => {
                 selectedCard = card;
+              }, () => selectedCard, (index) => {
+                selectedResultIndex = index;
               });
               
               // Si un seul résultat, le sélectionner automatiquement
@@ -1360,12 +1362,14 @@
                 // Si la carte précédemment sélectionnée n'est plus valide, réinitialiser
                 if (!selectedCard) {
                   selectedResultIndex = 0;
+                  selectedCard = currentSearchResults[0];
                   updateSelectedResult(searchResults);
                   // Prévisualiser le premier résultat par défaut
                   if (currentSearchResults[0].thumbnailUrl) {
                     previewImg.src = `/api/card-thumbnail/${currentSearchResults[0].id}`;
                     preview.classList.add('show');
                   }
+                  addButton.disabled = false;
                 } else {
                   // Si la carte est toujours sélectionnée, prévisualiser celle-ci
                   if (selectedCard.thumbnailUrl) {
@@ -1405,30 +1409,56 @@
             // Si un résultat est sélectionné, utiliser celui-ci, sinon prendre le premier
             const indexToSelect = selectedResultIndex >= 0 ? selectedResultIndex : 0;
             if (currentSearchResults[indexToSelect]) {
-              const selected = selectCard(currentSearchResults[indexToSelect], searchInput, searchResults, addButton, preview, previewImg);
-              selectedCard = selected;
-              // La miniature est déjà masquée par selectCard pour ne pas cacher les contrôles
+              const cardToSelect = currentSearchResults[indexToSelect];
+              
+              // Si cette carte est déjà sélectionnée, valider la sélection
+              if (selectedCard && selectedCard.id === cardToSelect.id) {
+                const selected = selectCard(cardToSelect, searchInput, searchResults, addButton, preview, previewImg);
+                selectedCard = selected;
+                return;
+              }
+              
+              // Sinon, sélectionner cette carte (premier appui sur Entrée)
+              selectedCard = cardToSelect;
+              selectedResultIndex = indexToSelect;
+              
+              // Mettre à jour la sélection visuelle
+              updateSelectedResult(searchResults);
+              
+              // Afficher la miniature
+              if (cardToSelect.thumbnailUrl) {
+                previewImg.src = `/api/card-thumbnail/${cardToSelect.id}`;
+                preview.classList.add('show');
+              }
+              
+              // Activer le bouton Ajouter
+              addButton.disabled = false;
             }
             return;
           }
           
-          if (!searchResults.classList.contains('show')) return;
-          
-          if (e.key === 'ArrowDown') {
+          // Navigation avec les flèches uniquement si les résultats sont affichés
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+            if (!searchResults.classList.contains('show')) {
+              return; // Ne rien faire si les résultats ne sont pas affichés
+            }
             e.preventDefault();
-            selectedResultIndex = Math.min(selectedResultIndex + 1, currentSearchResults.length - 1);
-            updateSelectedResult(searchResults);
-            // Afficher l'aperçu du résultat sélectionné
-            if (selectedResultIndex >= 0 && currentSearchResults[selectedResultIndex]) {
-              const card = currentSearchResults[selectedResultIndex];
-              if (card.thumbnailUrl) {
-                previewImg.src = `/api/card-thumbnail/${card.id}`;
-                preview.classList.add('show');
+            e.stopPropagation();
+            
+            if (e.key === 'ArrowDown') {
+              selectedResultIndex = Math.min(selectedResultIndex + 1, currentSearchResults.length - 1);
+              if (selectedResultIndex >= 0 && currentSearchResults[selectedResultIndex]) {
+                selectedCard = currentSearchResults[selectedResultIndex];
+              }
+            } else if (e.key === 'ArrowUp') {
+              selectedResultIndex = Math.max(selectedResultIndex - 1, -1);
+              if (selectedResultIndex >= 0 && currentSearchResults[selectedResultIndex]) {
+                selectedCard = currentSearchResults[selectedResultIndex];
+              } else {
+                selectedCard = null;
               }
             }
-          } else if (e.key === 'ArrowUp') {
-            e.preventDefault();
-            selectedResultIndex = Math.max(selectedResultIndex - 1, -1);
+            
             updateSelectedResult(searchResults);
             // Afficher l'aperçu du résultat sélectionné
             if (selectedResultIndex >= 0 && currentSearchResults[selectedResultIndex]) {
@@ -1437,9 +1467,13 @@
                 previewImg.src = `/api/card-thumbnail/${card.id}`;
                 preview.classList.add('show');
               }
+              // Activer le bouton Ajouter
+              addButton.disabled = false;
             } else {
               preview.classList.remove('show');
+              addButton.disabled = true;
             }
+            return; // Important : arrêter ici pour éviter le scroll
           } else if (e.key === 'Escape') {
             e.preventDefault();
             searchResults.classList.remove('show');
@@ -1479,9 +1513,9 @@
       }
       
       // Afficher les résultats de recherche
-      function displaySearchResults(container, results, searchInput, preview, previewImg, addButton, setSelectedCardCallback) {
+      function displaySearchResults(container, results, searchInput, preview, previewImg, addButton, setSelectedCardCallback, getSelectedCard, setSelectedResultIndex) {
         container.innerHTML = '';
-        selectedResultIndex = -1;
+        // Ne pas réinitialiser selectedResultIndex ici, on le garde pour la navigation clavier
         
         if (results.length === 0) {
           container.innerHTML = `<div class="builder-search-result">${isFr ? 'Aucun résultat' : 'No results'}</div>`;
@@ -1507,16 +1541,49 @@
           
           resultDiv.addEventListener('mouseleave', () => {
             // Ne cacher la miniature que si aucune carte n'est sélectionnée
-            if (!selectedCard) {
+            const currentSelected = getSelectedCard ? getSelectedCard() : null;
+            if (!currentSelected) {
               preview.classList.remove('show');
             }
           });
           
-          // Sélection au clic
+          // Sélection au clic (double clic : premier pour sélectionner, deuxième pour valider)
           resultDiv.addEventListener('click', (e) => {
+            e.preventDefault();
             e.stopPropagation();
-            const selected = selectCard(card, searchInput, container, addButton, preview, previewImg);
-            setSelectedCardCallback(selected);
+            
+            // Récupérer la carte actuellement sélectionnée
+            const currentSelected = getSelectedCard ? getSelectedCard() : null;
+            
+            // Si cette carte est déjà sélectionnée, valider la sélection
+            if (currentSelected && currentSelected.id === card.id) {
+              const selected = selectCard(card, searchInput, container, addButton, preview, previewImg);
+              setSelectedCardCallback(selected);
+              return;
+            }
+            
+            // Sinon, sélectionner cette carte (premier clic)
+            setSelectedCardCallback(card);
+            if (setSelectedResultIndex) {
+              setSelectedResultIndex(index);
+            } else {
+              selectedResultIndex = index;
+            }
+            
+            // Mettre à jour la sélection visuelle immédiatement
+            const allResults = container.querySelectorAll('.builder-search-result');
+            allResults.forEach((r, i) => {
+              r.classList.toggle('selected', i === index);
+            });
+            
+            // Afficher la miniature (si pas déjà affichée par le survol)
+            if (card.thumbnailUrl) {
+              previewImg.src = `/api/card-thumbnail/${card.id}`;
+              preview.classList.add('show');
+            }
+            
+            // Activer le bouton Ajouter
+            addButton.disabled = false;
           });
           
           container.appendChild(resultDiv);
@@ -1666,6 +1733,22 @@
             document.write(html);
             document.close();
             
+            // S'assurer que les scripts s'exécutent après le chargement
+            // Attendre un peu pour que le DOM soit complètement chargé
+            setTimeout(() => {
+              // Forcer l'exécution des scripts si nécessaire
+              const scripts = document.querySelectorAll('script');
+              scripts.forEach(script => {
+                if (script.textContent && !script.executed) {
+                  try {
+                    eval(script.textContent);
+                    script.executed = true;
+                  } catch (e) {
+                    // Ignorer les erreurs d'exécution
+                  }
+                }
+              });
+            }, 100);
           } else {
             throw new Error('Erreur lors de la génération');
           }

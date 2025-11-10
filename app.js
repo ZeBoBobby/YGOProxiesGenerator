@@ -134,7 +134,7 @@ app.post('/upload-decklist', async (req, res) => {
           }
         });
 
-        filename = generateUniqueFilename('ygoproxy_builder.pdf');
+        filename = generateUniqueFilename('builder.pdf');
         downloadResult = await downloadImages(decklist);
       } else {
         throw new Error('Invalid cards format: must be an array');
