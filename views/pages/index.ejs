@@ -35,7 +35,7 @@
       }
 
       .form-container {
-        max-width: 600px;
+        max-width: 1000px;
         margin: 0 auto;
       }
 
@@ -367,6 +367,7 @@
         background: var(--bg);
         border-radius: 8px;
         border: 2px solid var(--border);
+        /* La largeur est héritée du form-container parent */
       }
 
       .builder-instructions {
@@ -881,18 +882,11 @@
         </form>
       </div>
 
-      <div class="content-box history-section" id="historySection" style="display: none; margin-top: 1.5rem;">
-        <h3><%= lang.includes('fr') ? 'Tes proxy de l\'époque du pharaon' : 'Your previous proxies' %></h3>
-        <ul class="history-list" id="historyList">
-          <li class="history-empty"><%= lang.includes('fr') ? 'Chargement...' : 'Loading...' %></li>
-        </ul>
-      </div>
-
       <div class="content-box" style="margin-top: 1.5rem; padding: 1.5rem;">
         <div class="steps-grid">
           <div class="step-item">
             <div class="step-icon">1</div>
-            <p><%= lang.includes('fr') ? 'Choisis ton fichier YDK ou code YDKE' : 'Choose your YDK file or YDKE code' %></p>
+            <p><%= lang.includes('fr') ? 'Importe ta liste avec ton YDK, YDKE ou créé là avec le builder' : 'Import your list with your YDK, YDKE or create it with the builder' %></p>
           </div>
           <div class="step-item">
             <div class="step-icon">2</div>
@@ -907,6 +901,13 @@
             <p><%= lang.includes('fr') ? 'Kiff tes proxy ;)' : 'Enjoy your proxies ;)' %></p>
           </div>
         </div>
+      </div>
+
+      <div class="content-box history-section" id="historySection" style="display: none; margin-top: 1.5rem;">
+        <h3><%= lang.includes('fr') ? 'Tes proxy de l\'époque du pharaon' : 'Your previous proxies' %></h3>
+        <ul class="history-list" id="historyList">
+          <li class="history-empty"><%= lang.includes('fr') ? 'Chargement...' : 'Loading...' %></li>
+        </ul>
       </div>
 
       <div class="content-box donation-section">
@@ -1234,6 +1235,19 @@
 
       // Fonction pour réinitialiser le builder
       function resetBuilder() {
+        // Nettoyer les event listeners globaux des lignes existantes
+        const existingLines = builderLines.querySelectorAll('.builder-line');
+        existingLines.forEach(line => {
+          if (line._globalKeydownHandler) {
+            document.removeEventListener('keydown', line._globalKeydownHandler, true);
+            delete line._globalKeydownHandler;
+          }
+          if (line._outsideClickHandler) {
+            document.removeEventListener('click', line._outsideClickHandler);
+            delete line._outsideClickHandler;
+          }
+        });
+        
         addedCards = [];
         builderLines.innerHTML = '';
         addBuilderLine();
@@ -1274,6 +1288,7 @@
         
         let currentSearchResults = [];
         let selectedCard = null;
+        let lastSearchTerm = ''; // Stocker le dernier terme de recherche
         
         // Recherche avec debounce
         searchInput.addEventListener('input', (e) => {
@@ -1289,6 +1304,7 @@
             preview.classList.remove('show');
             // S'assurer que l'image de la miniature est vidée
             previewImg.src = '';
+            lastSearchTerm = ''; // Réinitialiser le dernier terme de recherche
             return;
           }
           
@@ -1309,6 +1325,9 @@
           
           searchTimeouts[searchInput] = setTimeout(async () => {
             try {
+              // Stocker le terme de recherche pour pouvoir le réafficher au focus
+              lastSearchTerm = searchTerm;
+              
               // Utiliser la langue actuelle depuis le scope global (référence directe)
               const searchLang = currentSearchLanguage || 'en';
               const apiUrl = `/api/search-cards?fname=${encodeURIComponent(searchTerm)}&language=${encodeURIComponent(searchLang)}`;
@@ -1406,12 +1425,34 @@
           // Si Entrée est pressée avec des résultats affichés
           if (e.key === 'Enter' && searchResults.classList.contains('show') && currentSearchResults.length > 0) {
             e.preventDefault();
-            // Si un résultat est sélectionné, utiliser celui-ci, sinon prendre le premier
+            e.stopPropagation();
+            
+            // PRIORITÉ 1 : Si une carte est déjà sélectionnée (via clic précédent), la valider directement
+            if (selectedCard) {
+              // Trouver l'index de la carte sélectionnée dans les résultats
+              const selectedIndex = currentSearchResults.findIndex(c => c.id === selectedCard.id);
+              if (selectedIndex >= 0) {
+                const selected = selectCard(selectedCard, searchInput, searchResults, addButton, preview, previewImg);
+                selectedCard = selected;
+                return;
+              }
+              // Si la carte n'est pas trouvée dans les résultats, utiliser selectedResultIndex
+              if (selectedResultIndex >= 0 && selectedResultIndex < currentSearchResults.length) {
+                const cardToSelect = currentSearchResults[selectedResultIndex];
+                if (cardToSelect && cardToSelect.id === selectedCard.id) {
+                  const selected = selectCard(cardToSelect, searchInput, searchResults, addButton, preview, previewImg);
+                  selectedCard = selected;
+                  return;
+                }
+              }
+            }
+            
+            // PRIORITÉ 2 : Si un résultat est sélectionné via navigation clavier, utiliser celui-ci
             const indexToSelect = selectedResultIndex >= 0 ? selectedResultIndex : 0;
             if (currentSearchResults[indexToSelect]) {
               const cardToSelect = currentSearchResults[indexToSelect];
               
-              // Si cette carte est déjà sélectionnée, valider la sélection
+              // Si cette carte est déjà sélectionnée (via navigation précédente), valider la sélection
               if (selectedCard && selectedCard.id === cardToSelect.id) {
                 const selected = selectCard(cardToSelect, searchInput, searchResults, addButton, preview, previewImg);
                 selectedCard = selected;
@@ -1438,12 +1479,20 @@
           }
           
           // Navigation avec les flèches uniquement si les résultats sont affichés
-          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-            if (!searchResults.classList.contains('show')) {
-              return; // Ne rien faire si les résultats ne sont pas affichés
-            }
+          if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && searchResults.classList.contains('show')) {
             e.preventDefault();
             e.stopPropagation();
+            
+            // Si selectedResultIndex est invalide après un clic, le réinitialiser
+            if (selectedResultIndex < 0 || selectedResultIndex >= currentSearchResults.length) {
+              // Trouver l'index de la carte sélectionnée si elle existe
+              if (selectedCard) {
+                const foundIndex = currentSearchResults.findIndex(c => c.id === selectedCard.id);
+                selectedResultIndex = foundIndex >= 0 ? foundIndex : 0;
+              } else {
+                selectedResultIndex = 0;
+              }
+            }
             
             if (e.key === 'ArrowDown') {
               selectedResultIndex = Math.min(selectedResultIndex + 1, currentSearchResults.length - 1);
@@ -1473,7 +1522,7 @@
               preview.classList.remove('show');
               addButton.disabled = true;
             }
-            return; // Important : arrêter ici pour éviter le scroll
+            return false; // Important : arrêter ici pour éviter le scroll
           } else if (e.key === 'Escape') {
             e.preventDefault();
             searchResults.classList.remove('show');
@@ -1482,13 +1531,149 @@
           }
         });
         
-        // Clic en dehors pour fermer les résultats
-        document.addEventListener('click', (e) => {
+        // Event listener global pour capturer les touches même si le focus n'est pas sur searchInput
+        // (utile après un clic sur un résultat)
+        const handleGlobalKeydown = (e) => {
+          // Ne traiter que si les résultats sont affichés pour cette ligne spécifique
+          if (!searchResults.classList.contains('show')) {
+            return;
+          }
+          
+          // Vérifier qu'on est bien dans le contexte de cette ligne de builder
+          // en vérifiant que searchInput est toujours dans le DOM et dans lineDiv
+          if (!lineDiv.contains(searchInput) || !document.contains(searchInput)) {
+            return;
+          }
+          
+          // Si Entrée est pressée avec des résultats affichés
+          if (e.key === 'Enter' && currentSearchResults.length > 0) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // PRIORITÉ 1 : Si une carte est déjà sélectionnée (via clic précédent), la valider directement
+            if (selectedCard) {
+              // Trouver l'index de la carte sélectionnée dans les résultats
+              const selectedIndex = currentSearchResults.findIndex(c => c.id === selectedCard.id);
+              if (selectedIndex >= 0) {
+                const selected = selectCard(selectedCard, searchInput, searchResults, addButton, preview, previewImg);
+                selectedCard = selected;
+                return;
+              }
+              // Si la carte n'est pas trouvée dans les résultats, utiliser selectedResultIndex
+              if (selectedResultIndex >= 0 && selectedResultIndex < currentSearchResults.length) {
+                const cardToSelect = currentSearchResults[selectedResultIndex];
+                if (cardToSelect && cardToSelect.id === selectedCard.id) {
+                  const selected = selectCard(cardToSelect, searchInput, searchResults, addButton, preview, previewImg);
+                  selectedCard = selected;
+                  return;
+                }
+              }
+            }
+          }
+          
+          // Navigation avec les flèches
+          if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && currentSearchResults.length > 0) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Si selectedResultIndex est invalide après un clic, le réinitialiser
+            if (selectedResultIndex < 0 || selectedResultIndex >= currentSearchResults.length) {
+              // Trouver l'index de la carte sélectionnée si elle existe
+              if (selectedCard) {
+                const foundIndex = currentSearchResults.findIndex(c => c.id === selectedCard.id);
+                selectedResultIndex = foundIndex >= 0 ? foundIndex : 0;
+              } else {
+                selectedResultIndex = 0;
+              }
+            }
+            
+            if (e.key === 'ArrowDown') {
+              selectedResultIndex = Math.min(selectedResultIndex + 1, currentSearchResults.length - 1);
+              if (selectedResultIndex >= 0 && currentSearchResults[selectedResultIndex]) {
+                selectedCard = currentSearchResults[selectedResultIndex];
+              }
+            } else if (e.key === 'ArrowUp') {
+              selectedResultIndex = Math.max(selectedResultIndex - 1, -1);
+              if (selectedResultIndex >= 0 && currentSearchResults[selectedResultIndex]) {
+                selectedCard = currentSearchResults[selectedResultIndex];
+              } else {
+                selectedCard = null;
+              }
+            }
+            
+            updateSelectedResult(searchResults);
+            // Afficher l'aperçu du résultat sélectionné
+            if (selectedResultIndex >= 0 && currentSearchResults[selectedResultIndex]) {
+              const card = currentSearchResults[selectedResultIndex];
+              if (card.thumbnailUrl) {
+                previewImg.src = `/api/card-thumbnail/${card.id}`;
+                preview.classList.add('show');
+              }
+              // Activer le bouton Ajouter
+              addButton.disabled = false;
+            } else {
+              preview.classList.remove('show');
+              addButton.disabled = true;
+            }
+          }
+        };
+        
+        // Ajouter l'event listener global avec capture pour intercepter avant les autres handlers
+        document.addEventListener('keydown', handleGlobalKeydown, true);
+        
+        // Stocker la référence pour le nettoyage
+        lineDiv._globalKeydownHandler = handleGlobalKeydown;
+        
+        // Clic en dehors pour fermer les résultats et cacher la miniature
+        const handleOutsideClick = (e) => {
           if (!lineDiv.contains(e.target)) {
             searchResults.classList.remove('show');
-            // Cacher la miniature si aucune carte n'est sélectionnée
-            if (!selectedCard) {
-              preview.classList.remove('show');
+            // Toujours cacher la miniature quand on clique en dehors
+            preview.classList.remove('show');
+            previewImg.src = '';
+          }
+        };
+        document.addEventListener('click', handleOutsideClick);
+        
+        // Stocker la référence pour le nettoyage
+        lineDiv._outsideClickHandler = handleOutsideClick;
+        
+        // Réafficher la miniature et les résultats quand on revient sur le champ de recherche
+        searchInput.addEventListener('focus', () => {
+          // Si une carte est sélectionnée, réafficher sa miniature
+          if (selectedCard && selectedCard.thumbnailUrl) {
+            previewImg.src = `/api/card-thumbnail/${selectedCard.id}`;
+            preview.classList.add('show');
+          }
+          
+          // Si on avait une recherche active avant de cliquer en dehors, réafficher les résultats
+          if (lastSearchTerm.length >= 2 && currentSearchResults.length > 0) {
+            searchResults.classList.add('show');
+            displaySearchResults(searchResults, currentSearchResults, searchInput, preview, previewImg, addButton, (card) => {
+              selectedCard = card;
+            }, () => selectedCard, (index) => {
+              selectedResultIndex = index;
+            });
+            
+            // Mettre à jour la sélection visuelle si une carte était sélectionnée
+            if (selectedCard) {
+              // Trouver l'index de la carte sélectionnée dans les résultats
+              const foundIndex = currentSearchResults.findIndex(c => c.id === selectedCard.id);
+              if (foundIndex >= 0) {
+                selectedResultIndex = foundIndex;
+                updateSelectedResult(searchResults);
+              }
+            } else if (currentSearchResults.length > 0) {
+              // Si aucune carte n'était sélectionnée, sélectionner le premier résultat
+              selectedResultIndex = 0;
+              selectedCard = currentSearchResults[0];
+              updateSelectedResult(searchResults);
+              // Afficher la miniature du premier résultat
+              if (selectedCard.thumbnailUrl) {
+                previewImg.src = `/api/card-thumbnail/${selectedCard.id}`;
+                preview.classList.add('show');
+              }
+              addButton.disabled = false;
             }
           }
         });
@@ -1584,6 +1769,9 @@
             
             // Activer le bouton Ajouter
             addButton.disabled = false;
+            
+            // Remettre le focus sur le champ de recherche pour que les événements clavier fonctionnent
+            searchInput.focus();
           });
           
           container.appendChild(resultDiv);
