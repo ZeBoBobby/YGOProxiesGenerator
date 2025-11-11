@@ -18,3 +18,19 @@ output.pdf
 style.css
 success.html
 test8index.js
+
+# Scripts de port forwarding
+setup-port-forwarding.ps1
+setup-port-forwarding.bat
+wsl-port-forward.ps1
+wsl-port-forward.bat
+
+# Fichiers de documentation/analyse
+*.md
+!README.md
+.project-context.md
+
+# Fichiers de test
+*test*
+*Test*
+*TEST*

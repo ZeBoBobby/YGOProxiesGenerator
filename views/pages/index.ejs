@@ -1163,6 +1163,21 @@
       let selectedResultIndex = -1; // Pour la navigation clavier
       let currentSearchLanguage = 'en'; // Langue de recherche actuelle
       
+      // Détecter si on est sur mobile/tablette (appareil tactile)
+      // Utilise matchMedia pour détecter les appareils avec pointeur grossier (tactile)
+      const isMobileOrTablet = () => {
+        // Vérifier si matchMedia est disponible
+        if (window.matchMedia) {
+          // Détecter les appareils avec pointeur grossier (tactile)
+          if (window.matchMedia('(pointer: coarse)').matches) {
+            return true;
+          }
+        }
+        // Fallback : vérifier la présence de touch events
+        return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      };
+      const isTouchDevice = isMobileOrTablet();
+      
       // Charger la langue sauvegardée
       const BUILDER_LANGUAGE_KEY = 'ygoproxy_builder_language';
       const savedLanguage = localStorage.getItem(BUILDER_LANGUAGE_KEY);
@@ -1732,7 +1747,9 @@
             }
           });
           
-          // Sélection au clic (double clic : premier pour sélectionner, deuxième pour valider)
+          // Sélection au clic
+          // Sur mobile/tablette : double clic (premier pour sélectionner, deuxième pour valider)
+          // Sur PC : simple clic valide directement (car on peut survoler pour voir la miniature)
           resultDiv.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -1740,6 +1757,14 @@
             // Récupérer la carte actuellement sélectionnée
             const currentSelected = getSelectedCard ? getSelectedCard() : null;
             
+            // Sur PC (non tactile) : valider directement au clic
+            if (!isTouchDevice) {
+              const selected = selectCard(card, searchInput, container, addButton, preview, previewImg);
+              setSelectedCardCallback(selected);
+              return;
+            }
+            
+            // Sur mobile/tablette : comportement double clic
             // Si cette carte est déjà sélectionnée, valider la sélection
             if (currentSelected && currentSelected.id === card.id) {
               const selected = selectCard(card, searchInput, container, addButton, preview, previewImg);
